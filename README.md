@@ -82,7 +82,19 @@ When `prisma/schema.prisma` changes in a later update, run `npx prisma db push` 
 
 **Admin security:** passwords are bcrypt-hashed; sessions are signed, http-only cookies; `/admin` and `/api/admin` are protected by middleware and again inside each action; repeated wrong passwords are throttled for 15 minutes; admin pages are marked `noindex`.
 
-**Contact form** submissions are saved to the database and appear under **Messages** in the admin panel (unread count shown in the sidebar). A hidden honeypot field filters simple bots. The form does not send email.
+**Contact form** submissions are saved to the database and appear under **Messages** in the admin panel (unread count shown in the sidebar). A hidden honeypot field filters simple bots.
+
+**Email alerts:** when SMTP is configured, every new enquiry is also emailed to the firm — with the client's details, their message, and a button to open it in the admin panel. Pressing *Reply* answers the client directly. The email is sent after the visitor sees the confirmation, so a mail problem never affects the form; the enquiry is always saved first. Add these environment variables to turn it on:
+
+| Variable | Example |
+| --- | --- |
+| `SMTP_HOST` | `smtp.hostinger.com` (Hostinger email) · `smtp.gmail.com` (Gmail / Google Workspace) |
+| `SMTP_PORT` | `465` |
+| `SMTP_USER` / `SMTP_PASS` | The mailbox login. For Gmail use an App Password, not the normal password |
+| `MAIL_FROM` | Sender address — usually the same as `SMTP_USER` |
+| `CONTACT_ALERT_TO` | Who receives alerts, comma-separated. If empty, the email in **Admin → Settings** is used |
+
+**Admin → Settings** shows under the email field whether alerts are on and where they go, and the dashboard checklist reminds you until they are set up. If an alert can't be sent, the reason is written to the server log (`[contact] Email alert …`).
 
 **Branding**
 

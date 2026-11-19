@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/admin/ui";
 import { db } from "@/lib/db";
+import { alertRecipients, mailConfigured } from "@/lib/mail";
 
 export const metadata = { title: "Dashboard" };
 
@@ -30,6 +31,11 @@ export default async function Dashboard() {
     { done: !!settings?.phone, label: "Add phone number", href: "/admin/settings" },
     { done: !!settings?.address && !!settings?.city, label: "Add office address & city (important for local SEO)", href: "/admin/settings" },
     { done: !!settings?.email, label: "Add email address", href: "/admin/settings" },
+    {
+      done: mailConfigured() && alertRecipients(settings?.email ?? "").length > 0,
+      label: "Turn on email alerts for new enquiries (SMTP settings — see README)",
+      href: "/admin/settings",
+    },
     { done: !!settings?.mapEmbedUrl, label: "Add Google Map to contact page", href: "/admin/settings" },
     { done: !!settings?.seoDescription, label: "Write the site meta description", href: "/admin/settings" },
     { done: testimonials > 0, label: "Add real client testimonials", href: "/admin/testimonials" },

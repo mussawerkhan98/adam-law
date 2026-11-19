@@ -1,6 +1,7 @@
 import { ImageField, SubmitButton } from "@/components/admin/client";
 import { Card, Field, Flash, PageHeader, TextArea } from "@/components/admin/ui";
 import { db } from "@/lib/db";
+import { alertRecipients, mailConfigured } from "@/lib/mail";
 import { saveSettings } from "../../actions";
 
 export const metadata = { title: "Firm details & SEO" };
@@ -10,6 +11,12 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
     searchParams,
     db.siteSettings.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } }),
   ]);
+  const recipients = alertRecipients(s.email);
+  const alertHint = !mailConfigured()
+    ? "Email alerts for new enquiries are off — the SMTP settings on the server are not set (see README)."
+    : recipients.length
+      ? `Email alerts for new enquiries are on and go to: ${recipients.join(", ")}.`
+      : "Email alerts are set up on the server — enter an email here to receive them.";
 
   return (
     <>
@@ -30,7 +37,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           <div className="grid gap-5 md:grid-cols-2">
             <Field label="Phone" name="phone" defaultValue={s.phone} placeholder="+92 300 1234567" />
             <Field label="WhatsApp number" name="whatsapp" defaultValue={s.whatsapp} hint="With country code. Shows a WhatsApp button on every page." />
-            <Field label="Email" name="email" type="email" defaultValue={s.email} />
+            <Field label="Email" name="email" type="email" defaultValue={s.email} hint={alertHint} />
             <Field label="Office hours" name="officeHours" defaultValue={s.officeHours} placeholder="Mo-Sa 09:00-18:00" hint="Format Mo-Fr 09:00-17:00 helps Google read it." />
           </div>
         </Card>

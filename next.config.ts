@@ -3,7 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Pin the project root so stray lockfiles in parent folders don't confuse Next.js.
-  outputFileTracingRoot: process.cwd(),  async headers() {
+  outputFileTracingRoot: process.cwd(),
+  async headers() {
     return [
       {
         source: "/:path*",
