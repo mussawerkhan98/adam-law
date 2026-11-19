@@ -1,23 +1,53 @@
 @import "tailwindcss";
 
+/* Palette taken from the Adam Law Chamber logo: deep navy, royal blue "A", rich gold scales. */
 @theme {
-  --color-navy-950: #070e1a;
-  --color-navy-900: #0c1a2e;
-  --color-navy-800: #13263f;
-  --color-navy-700: #1c3556;
-  --color-navy-600: #2a4a73;
-  --color-gold-300: #e3cfa3;
-  --color-gold-400: #d2b57a;
-  --color-gold-500: #b8955a;
-  --color-gold-600: #9a7a45;
-  --color-cream-50: #fbf9f5;
-  --color-cream-100: #f5f1e8;
-  --color-cream-200: #ebe4d4;
-  --color-ink: #1d2433;
-  --color-muted: #5b6475;
+  --color-navy-950: #050b16;
+  --color-navy-900: #0a1628;
+  --color-navy-800: #0f2039;
+  --color-navy-700: #172e52;
+  --color-navy-600: #213f6e;
+  --color-royal-500: #2a55a0;
+  --color-royal-400: #4677c7;
+  --color-gold-100: #faf1d9;
+  --color-gold-200: #f3e2b0;
+  --color-gold-300: #e9cf85;
+  --color-gold-400: #dcb65c;
+  --color-gold-500: #c79a3b;
+  --color-gold-600: #a67b24;
+  --color-gold-700: #7f5c19;
+  --color-cream-50: #fcfaf5;
+  --color-cream-100: #f6f0e3;
+  --color-cream-200: #ebe1cc;
+  --color-ink: #141c2c;
+  --color-muted: #5b6577;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-playfair), ui-serif, Georgia, serif;
+  --font-serif: var(--font-cormorant), "Cormorant Garamond", ui-serif, Georgia, serif;
+  --font-display: var(--font-cinzel), "Cinzel", ui-serif, Georgia, serif;
+
+  --animate-fade-up: fade-up 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-float: float 7s ease-in-out infinite;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 html {
@@ -29,144 +59,355 @@ body {
   color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* Reusable bits */
-.container-x {
-  width: 100%;
-  max-width: 76rem;
-  margin-inline: auto;
-  padding-inline: 1.25rem;
-}
-@media (min-width: 768px) {
-  .container-x {
-    padding-inline: 2rem;
-  }
-}
-
-.eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--color-gold-500);
-}
-.eyebrow::before {
-  content: "";
-  width: 2rem;
-  height: 1px;
-  background: currentColor;
-}
-
-.btn-gold {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  border-radius: 0.25rem;
-  background: var(--color-gold-500);
+::selection {
+  background: var(--color-gold-300);
   color: var(--color-navy-950);
-  padding: 0.85rem 1.6rem;
-  font-weight: 600;
-  font-size: 0.95rem;
-  transition: background 0.2s;
-}
-.btn-gold:hover {
-  background: var(--color-gold-400);
-}
-.btn-outline {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  border-radius: 0.25rem;
-  border: 1px solid currentColor;
-  padding: 0.8rem 1.5rem;
-  font-weight: 600;
-  font-size: 0.95rem;
-  transition: background 0.2s;
-}
-.btn-outline:hover {
-  background: rgb(255 255 255 / 0.08);
 }
 
-.hero-pattern {
-  background-color: var(--color-navy-900);
-  background-image:
-    radial-gradient(ellipse at 80% 0%, rgb(184 149 90 / 0.18), transparent 55%),
-    radial-gradient(ellipse at 0% 100%, rgb(42 74 115 / 0.55), transparent 60%),
-    linear-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(255 255 255 / 0.035) 1px, transparent 1px);
-  background-size: auto, auto, 56px 56px, 56px 56px;
+:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 3px;
 }
 
-/* Long-form content rendered from Markdown */
-.content {
-  font-size: 1.0625rem;
-  line-height: 1.8;
-  color: var(--color-ink);
-}
-.content > * + * {
-  margin-top: 1.1em;
-}
-.content h2 {
-  font-family: var(--font-serif);
-  font-size: 1.75rem;
-  line-height: 1.25;
-  color: var(--color-navy-900);
-  margin-top: 2em;
-}
-.content h3 {
-  font-family: var(--font-serif);
-  font-size: 1.35rem;
-  color: var(--color-navy-900);
-  margin-top: 1.6em;
-}
-.content a {
-  color: var(--color-gold-600);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.content ul,
-.content ol {
-  padding-left: 1.4em;
-}
-.content ul {
-  list-style: disc;
-}
-.content ol {
-  list-style: decimal;
-}
-.content li + li {
-  margin-top: 0.4em;
-}
-.content li::marker {
-  color: var(--color-gold-500);
-}
-.content blockquote {
-  border-left: 3px solid var(--color-gold-500);
-  padding: 0.25em 0 0.25em 1.25em;
-  font-family: var(--font-serif);
-  font-size: 1.2rem;
-  font-style: italic;
-  color: var(--color-navy-700);
-}
-.content strong {
-  color: var(--color-navy-900);
-}
-.content img {
-  border-radius: 0.5rem;
-}
+/* Custom classes live in the components layer so Tailwind utilities (sticky, !px-6, …) can override them. */
+@layer components {
+  /* ───────── Layout ───────── */
+  .container-x {
+    width: 100%;
+    max-width: 78rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 768px) {
+    .container-x {
+      padding-inline: 2rem;
+    }
+  }
 
-details > summary {
-  list-style: none;
-}
-details > summary::-webkit-details-marker {
-  display: none;
-}
-details[open] .faq-icon {
-  transform: rotate(45deg);
+  .section {
+    padding-block: 5.5rem;
+  }
+  @media (min-width: 768px) {
+    .section {
+      padding-block: 7.5rem;
+    }
+  }
+
+  /* ───────── Type ───────── */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.85rem;
+    font-family: var(--font-display);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--color-gold-600);
+  }
+  .eyebrow::before {
+    content: "";
+    width: 2.25rem;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, currentColor);
+  }
+  .eyebrow-center::after {
+    content: "";
+    width: 2.25rem;
+    height: 1px;
+    background: linear-gradient(90deg, currentColor, transparent);
+  }
+  .on-dark .eyebrow,
+  .eyebrow.on-dark {
+    color: var(--color-gold-400);
+  }
+
+  .text-gold-gradient {
+    background: linear-gradient(100deg, #f6e3a6 0%, #dcb65c 35%, #f1d68a 55%, #b8862c 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* ───────── Buttons ───────── */
+  .btn-gold,
+  .btn-outline,
+  .btn-navy {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    border-radius: 2px;
+    padding: 0.95rem 1.75rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition:
+      transform 0.25s ease,
+      box-shadow 0.25s ease,
+      background-color 0.25s ease,
+      color 0.25s ease,
+      border-color 0.25s ease;
+  }
+  .btn-gold {
+    overflow: hidden;
+    color: var(--color-navy-950);
+    background: linear-gradient(135deg, #f1d891 0%, #d7ad52 45%, #b8862c 100%);
+    box-shadow:
+      0 10px 30px -12px rgb(199 154 59 / 0.65),
+      inset 0 1px 0 rgb(255 255 255 / 0.45);
+  }
+  .btn-gold::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.45) 50%, transparent 70%);
+    transform: translateX(-120%);
+    transition: transform 0.7s ease;
+  }
+  .btn-gold:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 16px 34px -12px rgb(199 154 59 / 0.75),
+      inset 0 1px 0 rgb(255 255 255 / 0.5);
+  }
+  .btn-gold:hover::after {
+    transform: translateX(120%);
+  }
+  .btn-outline {
+    border: 1px solid rgb(220 182 92 / 0.6);
+    color: inherit;
+  }
+  .btn-outline:hover {
+    border-color: var(--color-gold-400);
+    background: rgb(220 182 92 / 0.1);
+    transform: translateY(-2px);
+  }
+  .btn-navy {
+    background: var(--color-navy-900);
+    color: #fff;
+  }
+  .btn-navy:hover {
+    background: var(--color-navy-700);
+    transform: translateY(-2px);
+  }
+
+  .link-arrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-gold-600);
+    transition: color 0.2s;
+  }
+  .link-arrow:hover {
+    color: var(--color-navy-900);
+  }
+  .link-arrow svg {
+    transition: transform 0.25s;
+  }
+  .link-arrow:hover svg {
+    transform: translateX(4px);
+  }
+
+  /* ───────── Backgrounds ───────── */
+  .hero-pattern {
+    position: relative;
+    isolation: isolate;
+    background-color: var(--color-navy-900);
+    background-image:
+      radial-gradient(ellipse 60% 70% at 85% 10%, rgb(199 154 59 / 0.2), transparent 60%),
+      radial-gradient(ellipse 70% 80% at 0% 100%, rgb(42 85 160 / 0.45), transparent 60%),
+      linear-gradient(160deg, #0b1830 0%, #0a1628 45%, #060d1b 100%);
+  }
+  .hero-pattern::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgb(255 255 255 / 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, #000 30%, transparent 85%);
+  }
+
+  /* Fine diagonal pinstripe for light sections */
+  .paper {
+    background-color: var(--color-cream-50);
+    background-image: radial-gradient(rgb(166 123 36 / 0.09) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+
+  /* Thin gold rule with a diamond in the middle, echoing the logo's flourish */
+  .ornament {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--color-gold-500);
+  }
+  .ornament::before,
+  .ornament::after {
+    content: "";
+    height: 1px;
+    flex: 1;
+  }
+  .ornament::before {
+    background: linear-gradient(90deg, transparent, currentColor);
+  }
+  .ornament::after {
+    background: linear-gradient(90deg, currentColor, transparent);
+  }
+
+  .gold-hairline {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgb(220 182 92 / 0.7), transparent);
+  }
+
+  /* Card with a gold edge that grows on hover */
+  .card {
+    position: relative;
+    border: 1px solid var(--color-cream-200);
+    border-radius: 0.75rem;
+    background: #fff;
+    box-shadow: 0 1px 2px rgb(10 22 40 / 0.04);
+    transition:
+      translate 0.35s cubic-bezier(0.2, 0.7, 0.2, 1),
+      box-shadow 0.35s ease,
+      border-color 0.35s ease;
+  }
+  /* Uses `translate` (not `transform`) so it doesn't fight the .reveal animation */
+  .card-hover:hover {
+    translate: 0 -6px;
+    border-color: rgb(199 154 59 / 0.45);
+    box-shadow: 0 28px 50px -24px rgb(10 22 40 / 0.28);
+  }
+
+  /* Reveal sections as they scroll into view (only where the browser supports it; content is never hidden otherwise) */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .reveal {
+        animation: fade-up linear both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 35%;
+      }
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* ───────── Long-form content rendered from Markdown ───────── */
+  .content {
+    font-size: 1.0625rem;
+    line-height: 1.85;
+    color: var(--color-ink);
+  }
+  .content > * + * {
+    margin-top: 1.1em;
+  }
+  .content h2 {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: 2rem;
+    line-height: 1.2;
+    color: var(--color-navy-900);
+    margin-top: 1.8em;
+  }
+  .content h3 {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: 1.5rem;
+    color: var(--color-navy-900);
+    margin-top: 1.5em;
+  }
+  .content a {
+    color: var(--color-gold-600);
+    text-decoration: underline;
+    text-decoration-color: rgb(199 154 59 / 0.4);
+    text-underline-offset: 3px;
+  }
+  .content a:hover {
+    text-decoration-color: currentColor;
+  }
+  .content ul,
+  .content ol {
+    padding-left: 1.4em;
+  }
+  .content ul {
+    list-style: none;
+    padding-left: 0;
+  }
+  .content ul > li {
+    position: relative;
+    padding-left: 1.6em;
+  }
+  .content ul > li::before {
+    content: "";
+    position: absolute;
+    left: 0.2em;
+    top: 0.72em;
+    width: 0.45em;
+    height: 0.45em;
+    background: var(--color-gold-500);
+    transform: rotate(45deg);
+  }
+  .content ol {
+    list-style: decimal;
+  }
+  .content li + li {
+    margin-top: 0.45em;
+  }
+  .content li::marker {
+    color: var(--color-gold-600);
+    font-weight: 600;
+  }
+  .content blockquote {
+    position: relative;
+    border-left: 2px solid var(--color-gold-500);
+    background: linear-gradient(90deg, rgb(199 154 59 / 0.08), transparent);
+    padding: 0.75em 1.25em;
+    font-family: var(--font-serif);
+    font-size: 1.4rem;
+    font-style: italic;
+    line-height: 1.5;
+    color: var(--color-navy-700);
+  }
+  .content strong {
+    color: var(--color-navy-900);
+  }
+  .content img {
+    border-radius: 0.75rem;
+  }
+  .content hr {
+    border: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-gold-400), transparent);
+    margin-block: 2.5em;
+  }
+
+  /* ───────── FAQ accordion ───────── */
+  details > summary {
+    list-style: none;
+  }
+  details > summary::-webkit-details-marker {
+    display: none;
+  }
 }

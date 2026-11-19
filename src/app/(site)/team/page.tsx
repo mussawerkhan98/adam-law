@@ -53,27 +53,33 @@ export default async function TeamPage() {
           { name: "Our Team", href: "/team" },
         ]}
       />
-      <section className="py-20 md:py-28">
+      <section className="section paper">
         <div className="container-x space-y-10">
           {team.map((m) => (
             <article
               key={m.id}
-              className="grid items-start gap-10 rounded-lg border border-cream-200 bg-white p-6 md:p-10 lg:grid-cols-[18rem_1fr]"
+              className="card reveal grid items-start gap-10 p-6 md:p-10 lg:grid-cols-[19rem_1fr] lg:gap-14"
             >
-              <div>
+              <div className="relative">
+                <div aria-hidden className="absolute -top-3 -left-3 h-full w-full rounded-xl border border-gold-500/45" />
                 {m.photoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={m.photoUrl} alt={`${m.name}, ${m.role}`} className="aspect-[4/5] w-full rounded-lg object-cover" />
+                  <img
+                    src={m.photoUrl}
+                    alt={`${m.name}, ${m.role}`}
+                    className="relative aspect-[4/5] w-full rounded-xl object-cover shadow-xl shadow-navy-900/15"
+                  />
                 ) : (
-                  <div className="hero-pattern grid aspect-[4/5] w-full place-items-center rounded-lg font-serif text-6xl text-gold-400">
-                    {initials(m.name)}
+                  <div className="hero-pattern relative grid aspect-[4/5] w-full place-items-center overflow-hidden rounded-xl">
+                    <span className="text-gold-gradient font-display text-7xl font-semibold">{initials(m.name)}</span>
                   </div>
                 )}
               </div>
-              <div>
+              <div className="lg:pt-4">
                 {m.role && <p className="eyebrow">{m.role}</p>}
-                <h2 className="mt-3 font-serif text-3xl text-navy-900">{m.name}</h2>
-                <div className="content mt-5 text-muted" dangerouslySetInnerHTML={{ __html: renderMarkdown(m.bio) }} />
+                <h2 className="mt-4 font-serif text-[2.6rem] leading-tight font-semibold text-navy-900">{m.name}</h2>
+                <div className="mt-5 h-px w-16 bg-gradient-to-r from-gold-500 to-transparent" />
+                <div className="content mt-6 text-muted" dangerouslySetInnerHTML={{ __html: renderMarkdown(m.bio) }} />
                 {(m.email || m.phone) && (
                   <div className="mt-6 flex flex-wrap gap-5 text-sm">
                     {m.phone && (

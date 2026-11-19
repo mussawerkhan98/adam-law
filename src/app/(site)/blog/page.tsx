@@ -34,7 +34,7 @@ export default async function BlogPage() {
           { name: "Insights", href: "/blog" },
         ]}
       />
-      <section className="py-20 md:py-28">
+      <section className="section paper">
         <div className="container-x grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {posts.map((p) => (
             <PostCard key={p.id} post={p} />

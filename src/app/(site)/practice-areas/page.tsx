@@ -37,10 +37,10 @@ export default async function PracticeAreasPage() {
           { name: "Practice Areas", href: "/practice-areas" },
         ]}
       />
-      <section className="py-20 md:py-28">
+      <section className="section paper">
         <div className="container-x grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {areas.map((area) => (
-            <PracticeCard key={area.id} area={area} />
+          {areas.map((area, i) => (
+            <PracticeCard key={area.id} area={area} index={i} />
           ))}
           {areas.length === 0 && <p className="text-muted">Practice areas will be listed here soon.</p>}
         </div>

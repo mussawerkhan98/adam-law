@@ -1,7 +1,6 @@
 import Link from "next/link";
-import type { Settings } from "@/lib/data";
-import { telHref } from "@/lib/utils";
 import {
+  ArrowRightIcon,
   ClockIcon,
   FacebookIcon,
   InstagramIcon,
@@ -9,9 +8,23 @@ import {
   MailIcon,
   PhoneIcon,
   PinIcon,
+  WhatsAppIcon,
   XIcon,
   YouTubeIcon,
 } from "@/components/icons";
+import type { Settings } from "@/lib/data";
+import { telHref, whatsappHref } from "@/lib/utils";
+
+function FooterHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="mb-6 font-display text-[0.8rem] font-semibold tracking-[0.24em] text-gold-300 uppercase">
+      {children}
+      <span aria-hidden className="mt-3 block h-px w-10 bg-gradient-to-r from-gold-500 to-transparent" />
+    </h2>
+  );
+}
+
+const linkCls = "group inline-flex items-center gap-2 transition hover:text-gold-300";
 
 export function Footer({ settings, areas }: { settings: Settings; areas: { title: string; slug: string }[] }) {
   const socials = [
@@ -22,16 +35,19 @@ export function Footer({ settings, areas }: { settings: Settings; areas: { title
     { href: settings.youtube, label: "YouTube", Icon: YouTubeIcon },
   ].filter((s) => s.href);
   const fullAddress = [settings.address, settings.city, settings.country].filter(Boolean).join(", ");
+  const hasContact = Boolean(fullAddress || settings.phone || settings.email || settings.whatsapp || settings.officeHours);
 
   return (
-    <footer className="bg-navy-950 text-white/70">
-      <div className="container-x grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-4">
-        <div className="space-y-5">
+    <footer className="relative overflow-hidden bg-navy-950 text-[0.95rem] text-white/60">
+      <div aria-hidden className="absolute -top-40 left-1/2 h-80 w-[40rem] -translate-x-1/2 rounded-full bg-royal-500/10 blur-3xl" />
+
+      <div className="container-x relative grid gap-14 py-20 md:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1fr_1.2fr] lg:gap-10">
+        <div className="space-y-7">
           <Link href="/" className="inline-block" aria-label={`${settings.firmName} — home`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/brand/logo.png" alt={settings.firmName} width={640} height={714} loading="lazy" className="h-auto w-36" />
+            <img src="/brand/logo.png" alt={settings.firmName} width={640} height={714} loading="lazy" className="h-auto w-40" />
           </Link>
-          {settings.footerText && <p className="text-sm leading-relaxed">{settings.footerText}</p>}
+          {settings.footerText && <p className="max-w-xs leading-relaxed">{settings.footerText}</p>}
           {socials.length > 0 && (
             <ul className="flex gap-3">
               {socials.map(({ href, label, Icon }) => (
@@ -41,7 +57,7 @@ export function Footer({ settings, areas }: { settings: Settings; areas: { title
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={label}
-                    className="grid h-9 w-9 place-items-center rounded-full border border-white/15 transition hover:border-gold-500 hover:text-gold-400"
+                    className="grid h-10 w-10 place-items-center rounded-full border border-white/12 transition hover:-translate-y-0.5 hover:border-gold-400 hover:bg-gold-500/10 hover:text-gold-300"
                   >
                     <Icon width={16} height={16} />
                   </a>
@@ -52,11 +68,12 @@ export function Footer({ settings, areas }: { settings: Settings; areas: { title
         </div>
 
         <div>
-          <h2 className="mb-5 font-serif text-lg text-white">Practice Areas</h2>
-          <ul className="space-y-2.5 text-sm">
+          <FooterHeading>Practice Areas</FooterHeading>
+          <ul className="space-y-3">
             {areas.slice(0, 6).map((a) => (
               <li key={a.slug}>
-                <Link href={`/practice-areas/${a.slug}`} className="hover:text-gold-400">
+                <Link href={`/practice-areas/${a.slug}`} className={linkCls}>
+                  <span aria-hidden className="h-1 w-1 rotate-45 bg-gold-500/70 transition group-hover:bg-gold-300" />
                   {a.title}
                 </Link>
               </li>
@@ -65,17 +82,18 @@ export function Footer({ settings, areas }: { settings: Settings; areas: { title
         </div>
 
         <div>
-          <h2 className="mb-5 font-serif text-lg text-white">Quick Links</h2>
-          <ul className="space-y-2.5 text-sm">
+          <FooterHeading>Quick Links</FooterHeading>
+          <ul className="space-y-3">
             {[
               ["/about", "About Us"],
               ["/team", "Our Team"],
               ["/blog", "Legal Insights"],
               ["/faq", "FAQ"],
-              ["/contact", "Book a Consultation"],
+              ["/contact", "Contact"],
             ].map(([href, label]) => (
               <li key={href}>
-                <Link href={href} className="hover:text-gold-400">
+                <Link href={href} className={linkCls}>
+                  <span aria-hidden className="h-1 w-1 rotate-45 bg-gold-500/70 transition group-hover:bg-gold-300" />
                   {label}
                 </Link>
               </li>
@@ -84,47 +102,63 @@ export function Footer({ settings, areas }: { settings: Settings; areas: { title
         </div>
 
         <div>
-          <h2 className="mb-5 font-serif text-lg text-white">Contact</h2>
-          <ul className="space-y-4 text-sm">
-            {fullAddress && (
-              <li className="flex gap-3">
-                <PinIcon width={18} height={18} className="mt-0.5 shrink-0 text-gold-400" />
-                <span>{fullAddress}</span>
-              </li>
-            )}
-            {settings.phone && (
-              <li className="flex gap-3">
-                <PhoneIcon width={18} height={18} className="mt-0.5 shrink-0 text-gold-400" />
-                <a href={telHref(settings.phone)} className="hover:text-gold-400">
-                  {settings.phone}
-                </a>
-              </li>
-            )}
-            {settings.email && (
-              <li className="flex gap-3">
-                <MailIcon width={18} height={18} className="mt-0.5 shrink-0 text-gold-400" />
-                <a href={`mailto:${settings.email}`} className="break-all hover:text-gold-400">
-                  {settings.email}
-                </a>
-              </li>
-            )}
-            {settings.officeHours && (
-              <li className="flex gap-3">
-                <ClockIcon width={18} height={18} className="mt-0.5 shrink-0 text-gold-400" />
-                <span>{settings.officeHours}</span>
-              </li>
-            )}
-          </ul>
+          <FooterHeading>Get in Touch</FooterHeading>
+          {hasContact && (
+            <ul className="space-y-4">
+              {fullAddress && (
+                <li className="flex gap-3">
+                  <PinIcon width={18} height={18} className="mt-0.5 shrink-0 text-gold-400" />
+                  <span>{fullAddress}</span>
+                </li>
+              )}
+              {settings.phone && (
+                <li className="flex gap-3">
+                  <PhoneIcon width={18} height={18} className="mt-0.5 shrink-0 text-gold-400" />
+                  <a href={telHref(settings.phone)} className="transition hover:text-gold-300">
+                    {settings.phone}
+                  </a>
+                </li>
+              )}
+              {settings.whatsapp && (
+                <li className="flex gap-3">
+                  <WhatsAppIcon width={18} height={18} className="mt-0.5 shrink-0 text-gold-400" />
+                  <a href={whatsappHref(settings.whatsapp)} target="_blank" rel="noopener noreferrer" className="transition hover:text-gold-300">
+                    WhatsApp us
+                  </a>
+                </li>
+              )}
+              {settings.email && (
+                <li className="flex gap-3">
+                  <MailIcon width={18} height={18} className="mt-0.5 shrink-0 text-gold-400" />
+                  <a href={`mailto:${settings.email}`} className="break-all transition hover:text-gold-300">
+                    {settings.email}
+                  </a>
+                </li>
+              )}
+              {settings.officeHours && (
+                <li className="flex gap-3">
+                  <ClockIcon width={18} height={18} className="mt-0.5 shrink-0 text-gold-400" />
+                  <span>{settings.officeHours}</span>
+                </li>
+              )}
+            </ul>
+          )}
+          <div className={`rounded-xl border border-gold-500/25 bg-white/[0.03] p-5 ${hasContact ? "mt-7" : ""}`}>
+            <p className="font-serif text-xl font-semibold text-white">Free first consultation</p>
+            <p className="mt-1 text-sm">Confidential advice on your next steps.</p>
+            <Link href="/contact" className="mt-4 inline-flex items-center gap-2 text-[0.78rem] font-semibold tracking-[0.12em] text-gold-300 uppercase transition hover:text-gold-200">
+              Book now <ArrowRightIcon width={14} height={14} />
+            </Link>
+          </div>
         </div>
       </div>
 
-      <div className="border-t border-white/10">
-        <div className="container-x flex flex-col gap-2 py-6 text-xs text-white/50 md:flex-row md:items-center md:justify-between">
-          <p>
-            © {new Date().getFullYear()} {settings.firmName}. All rights reserved.
-          </p>
-          <p>The information on this website is for general guidance only and is not legal advice.</p>
-        </div>
+      <div className="gold-hairline opacity-40" />
+      <div className="container-x relative flex flex-col gap-3 py-7 text-xs text-white/45 md:flex-row md:items-center md:justify-between">
+        <p>
+          © {new Date().getFullYear()} {settings.firmName}. All rights reserved.
+        </p>
+        <p className="max-w-xl md:text-right">The information on this website is for general guidance only and is not legal advice.</p>
       </div>
     </footer>
   );

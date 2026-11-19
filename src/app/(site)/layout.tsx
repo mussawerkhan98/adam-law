@@ -29,11 +29,18 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <JsonLd data={legalServiceSchema(settings, areas)} />
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded focus:bg-white focus:px-4 focus:py-2"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded focus:bg-white focus:px-4 focus:py-2 focus:text-navy-900"
       >
         Skip to content
       </a>
-      <Header firmName={settings.firmName} phone={settings.phone} logoUrl={settings.logoUrl} />
+      <Header
+        firmName={settings.firmName}
+        phone={settings.phone}
+        email={settings.email}
+        whatsapp={settings.whatsapp}
+        officeHours={settings.officeHours}
+        logoUrl={settings.logoUrl}
+      />
       <main id="main">{children}</main>
       <Footer settings={settings} areas={areas} />
       <WhatsAppFloat number={settings.whatsapp} firmName={settings.firmName} />

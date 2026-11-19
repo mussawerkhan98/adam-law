@@ -20,12 +20,20 @@ export default async function HomepageEditor({ searchParams }: { searchParams: P
 
         <Card title="Hero banner" description="The first thing visitors see. Your main heading (H1) is important for SEO — mention what you do and where.">
           <Field label="Small heading above title" name="heroEyebrow" defaultValue={s.heroEyebrow} placeholder="e.g. Advocates & Legal Consultants" />
-          <Field label="Main heading" name="heroTitle" defaultValue={s.heroTitle} />
+          <Field
+            label="Main heading"
+            name="heroTitle"
+            defaultValue={s.heroTitle}
+            hint="Wrap words in *asterisks* to show them in gold italics, e.g. Trusted legal counsel *when it matters most*"
+          />
           <TextArea label="Sub-heading" name="heroSubtitle" defaultValue={s.heroSubtitle} rows={3} />
           <ImageField label="Hero image" name="heroImageUrl" defaultValue={s.heroImageUrl} hint="Portrait photo works best (4:5). Shown on large screens." />
         </Card>
 
-        <Card title="Highlights" description="Up to four short figures shown under the banner. Only use accurate numbers. Leave blank to hide.">
+        <Card
+          title="Highlights"
+          description="Up to four short figures shown in the home page About section; figure 1 also appears on the gold badge in the banner. Only use accurate numbers. Leave blank to hide."
+        >
           {[1, 2, 3, 4].map((n) => (
             <div key={n} className="grid gap-5 md:grid-cols-[10rem_1fr]">
               <Field label={`Figure ${n}`} name={`stat${n}Value`} defaultValue={s[`stat${n}Value` as keyof typeof s] as string} placeholder="e.g. 15+" />
@@ -35,13 +43,13 @@ export default async function HomepageEditor({ searchParams }: { searchParams: P
         </Card>
 
         <Card title="About section" description="Shown on the home page and the About page.">
-          <Field label="Heading" name="aboutTitle" defaultValue={s.aboutTitle} />
+          <Field label="Heading" name="aboutTitle" defaultValue={s.aboutTitle} hint="*Asterisks* highlight words in gold." />
           <TextArea label="Text" name="aboutBody" defaultValue={s.aboutBody} rows={12} markdown />
           <ImageField label="About image" name="aboutImageUrl" defaultValue={s.aboutImageUrl} hint="e.g. a photo of the advocate or the office. If empty, the first team member's photo is used." />
         </Card>
 
         <Card title="Call-to-action band" description="The dark banner near the bottom of every page.">
-          <Field label="Heading" name="ctaTitle" defaultValue={s.ctaTitle} />
+          <Field label="Heading" name="ctaTitle" defaultValue={s.ctaTitle} hint="*Asterisks* highlight words in gold." />
           <TextArea label="Text" name="ctaText" defaultValue={s.ctaText} rows={2} />
         </Card>
 

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { CheckIcon } from "@/components/icons";
+import Link from "next/link";
+import { ArrowRightIcon, PracticeIcon } from "@/components/icons";
 import { JsonLd } from "@/components/site/JsonLd";
 import { CtaBand, PageHero, SectionHeading } from "@/components/site/Sections";
 import { getPracticeAreas, getSettings, getTeam } from "@/lib/data";
@@ -17,15 +18,16 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const VALUES = [
-  ["Integrity", "Honest advice, even when it is not what you hoped to hear."],
-  ["Confidentiality", "Your information is protected with the utmost discretion."],
-  ["Diligence", "Thorough preparation for every hearing, filing and negotiation."],
-  ["Accessibility", "Clear communication and prompt updates throughout your matter."],
+  { icon: "scale", title: "Integrity", text: "Honest advice, even when it is not what you hoped to hear." },
+  { icon: "shield", title: "Confidentiality", text: "Your information is protected with the utmost discretion." },
+  { icon: "document", title: "Diligence", text: "Thorough preparation for every hearing, filing and negotiation." },
+  { icon: "users", title: "Accessibility", text: "Clear communication and prompt updates throughout your matter." },
 ];
 
 export default async function AboutPage() {
   const [settings, team, areas] = await Promise.all([getSettings(), getTeam(), getPracticeAreas()]);
   const lead = team[0];
+  const image = settings.aboutImageUrl || lead?.photoUrl;
   return (
     <>
       <JsonLd data={breadcrumbSchema([{ name: "Home", path: "/" }, { name: "About", path: "/about" }])} />
@@ -39,31 +41,57 @@ export default async function AboutPage() {
         ]}
       />
 
-      <section className="py-20 md:py-28">
-        <div className="container-x grid gap-14 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="content" dangerouslySetInnerHTML={{ __html: renderMarkdown(settings.aboutBody) }} />
-          <aside className="space-y-6">
-            {settings.aboutImageUrl || lead?.photoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={settings.aboutImageUrl || lead!.photoUrl}
-                alt={lead ? `${lead.name}, ${lead.role}` : settings.firmName}
-                className="aspect-[4/5] w-full rounded-lg object-cover"
-              />
-            ) : (
-              <div className="hero-pattern grid aspect-[4/5] w-full place-items-center rounded-lg">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/brand/logo.png" alt="" width={640} height={714} className="h-auto w-1/2" />
-              </div>
-            )}
+      <section className="section">
+        <div className="container-x grid gap-16 lg:grid-cols-[1.15fr_0.85fr] lg:gap-20">
+          <div className="reveal">
+            <p className="eyebrow mb-6">Who We Are</p>
+            <div
+              className="content text-[1.1rem] first-letter:float-left first-letter:mt-1 first-letter:mr-3 first-letter:font-serif first-letter:text-7xl first-letter:leading-[0.8] first-letter:font-bold first-letter:text-gold-600"
+              dangerouslySetInnerHTML={{ __html: renderMarkdown(settings.aboutBody) }}
+            />
+            <div className="mt-12 flex flex-wrap items-center gap-6">
+              <Link href="/contact" className="btn-gold">
+                Book a Consultation <ArrowRightIcon width={16} height={16} />
+              </Link>
+              <Link href="/team" className="link-arrow">
+                Meet the team <ArrowRightIcon width={16} height={16} />
+              </Link>
+            </div>
+          </div>
+
+          <aside className="space-y-8">
+            <div className="reveal relative mx-auto max-w-md lg:max-w-none">
+              <div aria-hidden className="absolute -top-4 -right-4 h-full w-full rounded-xl border border-gold-500/50" />
+              {image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={image}
+                  alt={lead ? `${lead.name}, ${lead.role}` : settings.firmName}
+                  className="relative aspect-[4/5] w-full rounded-xl object-cover shadow-2xl shadow-navy-900/20"
+                />
+              ) : (
+                <div className="hero-pattern relative grid aspect-[4/5] w-full place-items-center overflow-hidden rounded-xl shadow-2xl shadow-navy-900/30">
+                  <div aria-hidden className="absolute top-1/3 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full bg-gold-400/15 blur-3xl" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/brand/logo.png" alt="" width={640} height={714} className="relative h-auto w-3/5" />
+                </div>
+              )}
+            </div>
             {areas.length > 0 && (
-              <div className="rounded-lg border border-cream-200 bg-white p-7">
-                <h2 className="font-serif text-xl text-navy-900">We advise on</h2>
-                <ul className="mt-4 space-y-2.5">
+              <div className="card reveal p-8">
+                <h2 className="font-serif text-2xl font-semibold text-navy-900">We advise on</h2>
+                <div className="mt-3 h-px w-12 bg-gradient-to-r from-gold-500 to-transparent" />
+                <ul className="mt-5 divide-y divide-cream-200">
                   {areas.map((a) => (
-                    <li key={a.id} className="flex items-center gap-3 text-muted">
-                      <CheckIcon width={16} height={16} className="text-gold-500" />
-                      {a.title}
+                    <li key={a.id}>
+                      <Link
+                        href={`/practice-areas/${a.slug}`}
+                        className="group flex items-center gap-3 py-3 text-navy-800 transition hover:text-gold-700"
+                      >
+                        <PracticeIcon name={a.icon} width={18} height={18} className="text-gold-500" />
+                        <span className="flex-1">{a.title}</span>
+                        <ArrowRightIcon width={15} height={15} className="text-gold-500 opacity-0 transition group-hover:translate-x-1 group-hover:opacity-100" />
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -73,15 +101,20 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      <section className="bg-white py-20 md:py-28">
+      <section className="section paper border-y border-cream-200">
         <div className="container-x">
-          <SectionHeading align="center" eyebrow="Our Values" title="The principles behind our practice" />
-          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {VALUES.map(([title, text], i) => (
-              <div key={title} className="rounded-lg border border-cream-200 bg-cream-50 p-8">
-                <span className="font-serif text-4xl text-gold-500/70">0{i + 1}</span>
-                <h3 className="mt-4 font-serif text-xl text-navy-900">{title}</h3>
-                <p className="mt-3 leading-relaxed text-muted">{text}</p>
+          <SectionHeading align="center" eyebrow="Our Values" title="The principles *behind our practice*" />
+          <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {VALUES.map((v, i) => (
+              <div key={v.title} className="group card card-hover reveal p-8">
+                <div className="flex items-center justify-between">
+                  <span className="grid h-14 w-14 place-items-center rounded-full bg-navy-900 text-gold-300 transition group-hover:bg-gradient-to-br group-hover:from-gold-300 group-hover:to-gold-600 group-hover:text-navy-950">
+                    <PracticeIcon name={v.icon} width={24} height={24} />
+                  </span>
+                  <span className="font-display text-3xl font-semibold text-cream-200">0{i + 1}</span>
+                </div>
+                <h3 className="mt-6 font-serif text-2xl font-semibold text-navy-900">{v.title}</h3>
+                <p className="mt-3 leading-relaxed text-muted">{v.text}</p>
               </div>
             ))}
           </div>

@@ -61,20 +61,28 @@ export default async function PracticeAreaPage({ params }: Props) {
         ]}
       />
 
-      <section className="py-20 md:py-28">
-        <div className="container-x grid gap-14 lg:grid-cols-[1fr_22rem]">
+      <section className="section">
+        <div className="container-x grid gap-16 lg:grid-cols-[1fr_23rem]">
           <article>
             {area.imageUrl && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={area.imageUrl} alt={area.title} className="mb-10 aspect-[16/8] w-full rounded-lg object-cover" />
+              <img
+                src={area.imageUrl}
+                alt={area.title}
+                className="mb-12 aspect-[16/8] w-full rounded-xl object-cover shadow-xl shadow-navy-900/10"
+              />
             )}
-            <div className="content" dangerouslySetInnerHTML={{ __html: renderMarkdown(area.body || area.summary) }} />
+            <div className="content text-[1.1rem]" dangerouslySetInnerHTML={{ __html: renderMarkdown(area.body || area.summary) }} />
           </article>
 
-          <aside className="space-y-6 lg:sticky lg:top-28 lg:self-start">
-            <div className="hero-pattern rounded-lg p-8 text-white">
-              <PracticeIcon name={area.icon} width={36} height={36} className="text-gold-400" />
-              <h2 className="mt-4 font-serif text-2xl">Need help with {area.title.toLowerCase()}?</h2>
+          <aside className="space-y-6 lg:sticky lg:top-32 lg:self-start">
+            <div className="hero-pattern overflow-hidden rounded-xl p-8 text-white shadow-2xl shadow-navy-900/25">
+              <span className="grid h-16 w-16 place-items-center rounded-full border border-gold-400/40 bg-gold-500/10 text-gold-300">
+                <PracticeIcon name={area.icon} width={30} height={30} />
+              </span>
+              <h2 className="mt-6 font-serif text-[1.75rem] leading-tight font-semibold">
+                Need help with {area.title.toLowerCase()}?
+              </h2>
               <p className="mt-3 text-white/70">Tell us about your situation and we will advise on the best way forward.</p>
               <Link href={`/contact?area=${encodeURIComponent(area.title)}`} className="btn-gold mt-6 w-full">
                 Request a Consultation
@@ -93,8 +101,9 @@ export default async function PracticeAreaPage({ params }: Props) {
               </div>
             </div>
 
-            <nav aria-label="Other practice areas" className="rounded-lg border border-cream-200 bg-white p-7">
-              <h2 className="font-serif text-xl text-navy-900">Other practice areas</h2>
+            <nav aria-label="Other practice areas" className="card p-7">
+              <h2 className="font-serif text-2xl font-semibold text-navy-900">Other practice areas</h2>
+              <div className="mt-3 h-px w-12 bg-gradient-to-r from-gold-500 to-transparent" />
               <ul className="mt-4 divide-y divide-cream-200">
                 {areas
                   .filter((a) => a.id !== area.id)
@@ -102,9 +111,11 @@ export default async function PracticeAreaPage({ params }: Props) {
                     <li key={a.id}>
                       <Link
                         href={`/practice-areas/${a.slug}`}
-                        className="flex items-center justify-between py-3 text-muted hover:text-gold-600"
+                        className="group flex items-center gap-3 py-3.5 text-navy-800 transition hover:text-gold-700"
                       >
-                        {a.title} <ArrowRightIcon width={16} height={16} />
+                        <PracticeIcon name={a.icon} width={18} height={18} className="text-gold-500" />
+                        <span className="flex-1">{a.title}</span>
+                        <ArrowRightIcon width={15} height={15} className="text-gold-500 transition group-hover:translate-x-1" />
                       </Link>
                     </li>
                   ))}

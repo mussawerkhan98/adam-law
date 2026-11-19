@@ -252,16 +252,16 @@ async function main() {
         firmName: "Adam Law Chamber",
         tagline: "Advocates & Legal Consultants",
         heroEyebrow: "Advocates & Legal Consultants",
-        heroTitle: "Trusted legal counsel when it matters most",
+        heroTitle: "Trusted legal counsel *when it matters most*",
         heroSubtitle:
           "Clear advice and determined representation in civil, criminal, family, property and corporate matters. Speak with an experienced advocate today.",
-        aboutTitle: "Committed to protecting your rights",
+        aboutTitle: "Committed to protecting *your rights*",
         aboutBody: `Adam Law Chamber provides dependable legal advice and representation to individuals, families and businesses.
 
 We believe good legal service starts with listening. We take time to understand your situation, explain your options in plain language, and build a clear strategy to achieve the best possible outcome.
 
 Whether you need advice before signing an agreement, help resolving a dispute, or strong representation in court, you can rely on us to handle your matter with diligence, integrity and complete confidentiality.`,
-        ctaTitle: "Need legal advice? Let's talk.",
+        ctaTitle: "Need legal advice? *Let's talk.*",
         ctaText: "Book a confidential consultation and get clear guidance on your next steps.",
         footerText: "Dependable legal advice and representation for individuals, families and businesses.",
         seoTitle: "Adam Law Chamber | Advocates & Legal Consultants",

@@ -37,7 +37,7 @@ export default async function FaqPage() {
           { name: "FAQ", href: "/faq" },
         ]}
       />
-      <section className="py-20 md:py-28">
+      <section className="section paper">
         <div className="container-x max-w-4xl">
           {faqs.length ? <FaqList faqs={faqs} /> : <p className="text-muted">Questions will be added soon.</p>}
         </div>

@@ -5,26 +5,30 @@ import { CheckIcon } from "@/components/icons";
 import { sendMessage, type ContactState } from "./actions";
 
 const input =
-  "w-full rounded border border-cream-200 bg-cream-50 px-4 py-3 text-ink outline-none transition placeholder:text-muted/60 focus:border-gold-500 focus:bg-white focus:ring-2 focus:ring-gold-500/20";
+  "w-full rounded-md border border-cream-200 bg-cream-50/70 px-4 py-3.5 text-ink outline-none transition placeholder:text-muted/60 hover:border-gold-500/40 focus:border-gold-500 focus:bg-white focus:ring-4 focus:ring-gold-500/15";
 
 export function ContactForm({ areas, defaultArea }: { areas: string[]; defaultArea?: string }) {
   const [state, action, pending] = useActionState<ContactState, FormData>(sendMessage, { ok: false });
 
   if (state.ok) {
     return (
-      <div className="rounded-lg border border-gold-500/40 bg-white p-10 text-center" role="status">
-        <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-gold-500/15 text-gold-600">
-          <CheckIcon width={28} height={28} />
+      <div className="card animate-fade-up border-gold-500/40 p-10 text-center md:p-14" role="status">
+        <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-gradient-to-br from-gold-300 to-gold-600 text-navy-950 shadow-lg shadow-gold-500/30">
+          <CheckIcon width={30} height={30} />
         </span>
-        <h2 className="mt-5 font-serif text-2xl text-navy-900">Thank you — message received</h2>
-        <p className="mt-3 text-muted">We will review your enquiry and get back to you as soon as possible.</p>
+        <h2 className="mt-6 font-serif text-3xl font-semibold text-navy-900">Thank you — message received</h2>
+        <p className="mx-auto mt-3 max-w-md text-muted">We will review your enquiry and get back to you as soon as possible.</p>
       </div>
     );
   }
 
   const f = state.fields ?? {};
   return (
-    <form action={action} className="space-y-5 rounded-lg border border-cream-200 bg-white p-6 md:p-10" noValidate>
+    <form action={action} className="card space-y-5 p-6 shadow-[0_30px_60px_-40px_rgb(10_22_40/0.35)] md:p-10" noValidate>
+      <div className="mb-3">
+        <h2 className="font-serif text-[2rem] leading-tight font-semibold text-navy-900">Send us a message</h2>
+        <p className="mt-2 text-muted">Tell us briefly about your matter — it takes less than two minutes.</p>
+      </div>
       <div className="grid gap-5 md:grid-cols-2">
         <label className="block">
           <span className="mb-2 block text-sm font-medium text-navy-900">Full name *</span>
