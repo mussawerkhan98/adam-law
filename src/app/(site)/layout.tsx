@@ -3,8 +3,9 @@ import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
 import { JsonLd } from "@/components/site/JsonLd";
 import { WhatsAppFloat } from "@/components/site/Sections";
-import { getPracticeAreas, getSettings } from "@/lib/data";
+import { getPosts, getPracticeAreas, getSettings } from "@/lib/data";
 import { legalServiceSchema } from "@/lib/seo";
+import { formatDate } from "@/lib/utils";
 
 export async function generateMetadata(): Promise<Metadata> {
   const s = await getSettings();
@@ -23,7 +24,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
-  const [settings, areas] = await Promise.all([getSettings(), getPracticeAreas()]);
+  const [settings, areas, posts] = await Promise.all([getSettings(), getPracticeAreas(), getPosts(3)]);
+  // Only what the menus need — keeps long article/practice text out of the client bundle.
+  const menuAreas = areas.map(({ title, slug, summary, icon }) => ({ title, slug, summary, icon }));
+  const menuPosts = posts.map(({ title, slug, publishedAt }) => ({ title, slug, date: formatDate(publishedAt) }));
   return (
     <>
       <JsonLd data={legalServiceSchema(settings, areas)} />
@@ -40,6 +44,8 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         whatsapp={settings.whatsapp}
         officeHours={settings.officeHours}
         logoUrl={settings.logoUrl}
+        areas={menuAreas}
+        posts={menuPosts}
       />
       <main id="main">{children}</main>
       <Footer settings={settings} areas={areas} />

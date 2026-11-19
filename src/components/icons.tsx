@@ -147,6 +147,16 @@ export const PlusIcon = (p: P) => (
     <path d="M12 5v14M5 12h14" />
   </svg>
 );
+export const ChevronDownIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M6 9l6 6 6-6" />
+  </svg>
+);
+export const ArrowUpRightIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M7 17L17 7M8 7h9v9" />
+  </svg>
+);
 export const QuoteIcon = (p: P) => (
   <svg {...base({ fill: "currentColor", stroke: "none", ...p })}>
     <path d="M9.6 6C6.5 7.3 4.5 10 4.5 13.6V18h5.6v-5.4H7.4c.1-2.1 1.3-3.7 3.2-4.6L9.6 6zm9 0c-3.1 1.3-5.1 4-5.1 7.6V18h5.6v-5.4h-2.7c.1-2.1 1.3-3.7 3.2-4.6L18.6 6z" />
