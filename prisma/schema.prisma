@@ -1,0 +1,166 @@
+// Adam Law Chamber — website + admin panel data model.
+// Works with MySQL 8 / MariaDB 10.6+ (Hostinger, PlanetScale-compatible hosts, local MariaDB).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// Single row (id = 1) holding firm details, home page content and default SEO.
+model SiteSettings {
+  id Int @id @default(1)
+
+  // Firm details
+  firmName    String  @default("Adam Law Chamber")
+  tagline     String  @default("")
+  logoUrl     String  @default("")
+  phone       String  @default("")
+  whatsapp    String  @default("")
+  email       String  @default("")
+  address     String  @default("")
+  city        String  @default("")
+  region      String  @default("")
+  postalCode  String  @default("")
+  country     String  @default("")
+  officeHours String  @default("")
+  mapEmbedUrl String? @db.Text
+  facebook    String  @default("")
+  instagram   String  @default("")
+  linkedin    String  @default("")
+  twitter     String  @default("")
+  youtube     String  @default("")
+
+  // Home page
+  heroEyebrow   String  @default("")
+  heroTitle     String  @default("")
+  heroSubtitle  String? @db.Text
+  heroImageUrl  String  @default("")
+  aboutTitle    String  @default("")
+  aboutBody     String? @db.Text
+  aboutImageUrl String  @default("")
+  stat1Value    String  @default("")
+  stat1Label    String  @default("")
+  stat2Value    String  @default("")
+  stat2Label    String  @default("")
+  stat3Value    String  @default("")
+  stat3Label    String  @default("")
+  stat4Value    String  @default("")
+  stat4Label    String  @default("")
+  ctaTitle      String  @default("")
+  ctaText       String? @db.Text
+  footerText    String? @db.Text
+
+  // Default SEO
+  seoTitle           String  @default("")
+  seoDescription     String? @db.Text
+  seoKeywords        String? @db.Text
+  ogImageUrl         String  @default("")
+  googleVerification String  @default("")
+
+  updatedAt DateTime @updatedAt
+}
+
+model PracticeArea {
+  id             Int      @id @default(autoincrement())
+  title          String
+  slug           String   @unique
+  icon           String   @default("scale")
+  summary        String   @db.Text
+  body           String?  @db.Text
+  imageUrl       String   @default("")
+  sortOrder      Int      @default(0)
+  published      Boolean  @default(true)
+  seoTitle       String   @default("")
+  seoDescription String?  @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model TeamMember {
+  id        Int      @id @default(autoincrement())
+  name      String
+  role      String   @default("")
+  bio       String?  @db.Text
+  photoUrl  String   @default("")
+  email     String   @default("")
+  phone     String   @default("")
+  sortOrder Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Testimonial {
+  id        Int      @id @default(autoincrement())
+  name      String
+  role      String   @default("")
+  quote     String   @db.Text
+  rating    Int      @default(5)
+  sortOrder Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Faq {
+  id        Int      @id @default(autoincrement())
+  question  String   @db.Text
+  answer    String   @db.Text
+  sortOrder Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Post {
+  id             Int       @id @default(autoincrement())
+  title          String
+  slug           String    @unique
+  excerpt        String?   @db.Text
+  body           String?   @db.Text
+  coverUrl       String    @default("")
+  author         String    @default("")
+  published      Boolean   @default(false)
+  publishedAt    DateTime?
+  seoTitle       String    @default("")
+  seoDescription String?   @db.Text
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([published, publishedAt])
+}
+
+model Message {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String
+  phone        String   @default("")
+  practiceArea String   @default("")
+  message      String   @db.Text
+  read         Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@index([read, createdAt])
+}
+
+/// Uploaded images are stored in the database so they work on any host (including Vercel).
+model Media {
+  id        String   @id @default(cuid())
+  filename  String
+  mimeType  String
+  size      Int
+  data      Bytes    @db.LongBlob
+  createdAt DateTime @default(now())
+}
+
+model AdminUser {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  name         String   @default("")
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
