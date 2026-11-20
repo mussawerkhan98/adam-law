@@ -65,6 +65,8 @@ Schema changes that add tables or fields are applied automatically on the next d
 
 **Content** lives in the database, so everything editable in the admin panel survives redeploys. Blog posts and long text fields accept Markdown.
 
+**Pages & sections** (`/admin/pages`) edits all remaining text on the site, page by page: section headings, the “Why choose us” boxes, “How we work” steps, values, buttons, page banners and Google titles/descriptions, the contact panel and form labels, the menu drop-downs, footer and call-to-action band. Home-page sections can be hidden with “Show this section”. Lists (boxes, steps, values…) can be added to, removed and reordered. Each section has *Restore original text*. The built-in wording lives in `src/lib/content.ts`; saved edits are stored in the `PageContent` table and override it field by field.
+
 **Image uploads** (team photos, hero image, etc.) are stored in the database and served from `/media/<id>`. Accepted: JPG, PNG, WebP, GIF up to 4 MB. Because they are in the database, back up the database to back up the images.
 
 **Admin security:** passwords are bcrypt-hashed; sessions are signed, http-only cookies; `/admin` and `/api/admin` are protected by middleware and again inside each action; repeated wrong passwords are throttled for 15 minutes; admin pages are marked `noindex`.

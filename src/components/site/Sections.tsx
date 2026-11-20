@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Fragment } from "react";
 import { ArrowRightIcon, PhoneIcon, PracticeIcon, WhatsAppIcon } from "@/components/icons";
+import { fill, type Content } from "@/lib/content";
 import type { Settings } from "@/lib/data";
 import { telHref, whatsappHref } from "@/lib/utils";
 
@@ -138,9 +139,11 @@ export function PageHero({
 export function PracticeCard({
   area,
   index,
+  linkLabel = "Learn more",
 }: {
   area: { title: string; slug: string; summary: string; icon: string };
   index?: number;
+  linkLabel?: string;
 }) {
   return (
     <Link
@@ -169,7 +172,7 @@ export function PracticeCard({
         {area.summary}
       </p>
       <span className="relative mt-7 inline-flex items-center gap-2 text-[0.78rem] font-semibold tracking-[0.12em] text-gold-600 uppercase transition-colors duration-500 group-hover:text-gold-300">
-        Learn more <ArrowRightIcon width={16} height={16} className="transition group-hover:translate-x-1.5" />
+        {linkLabel} <ArrowRightIcon width={16} height={16} className="transition group-hover:translate-x-1.5" />
       </span>
       <span
         aria-hidden
@@ -179,7 +182,8 @@ export function PracticeCard({
   );
 }
 
-export function CtaBand({ settings }: { settings: Settings }) {
+export function CtaBand({ settings, content }: { settings: Settings; content: Content }) {
+  const cta = content["shared.cta"];
   return (
     <section className="hero-pattern overflow-hidden text-white">
       <div className="gold-hairline" />
@@ -193,7 +197,7 @@ export function CtaBand({ settings }: { settings: Settings }) {
         className="pointer-events-none absolute -bottom-24 -left-24 w-[26rem] opacity-[0.06]"
       />
       <div className="container-x relative py-20 text-center md:py-28">
-        <p className="eyebrow eyebrow-center on-dark">Confidential Consultation</p>
+        {cta.eyebrow && <p className="eyebrow eyebrow-center on-dark">{cta.eyebrow}</p>}
         <h2 className="mx-auto mt-6 max-w-3xl font-serif text-4xl leading-[1.1] font-semibold md:text-[3.4rem]">
           <RichTitle text={settings.ctaTitle || "Speak with a lawyer *today*"} />
         </h2>
@@ -201,7 +205,7 @@ export function CtaBand({ settings }: { settings: Settings }) {
         {settings.ctaText && <p className="mx-auto mt-7 max-w-xl text-lg leading-relaxed text-white/70">{settings.ctaText}</p>}
         <div className="mt-10 flex flex-wrap justify-center gap-4">
           <Link href="/contact" className="btn-gold">
-            Book a Consultation <ArrowRightIcon width={16} height={16} />
+            {cta.button} <ArrowRightIcon width={16} height={16} />
           </Link>
           {settings.phone ? (
             <a href={telHref(settings.phone)} className="btn-outline text-white">
@@ -209,11 +213,11 @@ export function CtaBand({ settings }: { settings: Settings }) {
             </a>
           ) : settings.whatsapp ? (
             <a href={whatsappHref(settings.whatsapp)} target="_blank" rel="noopener noreferrer" className="btn-outline text-white">
-              <WhatsAppIcon width={16} height={16} /> WhatsApp us
+              <WhatsAppIcon width={16} height={16} /> {cta.whatsappLabel}
             </a>
           ) : (
             <Link href="/practice-areas" className="btn-outline text-white">
-              Our Practice Areas
+              {content["home.hero"].secondaryButton || content["header.nav"].practice}
             </Link>
           )}
         </div>
@@ -222,11 +226,11 @@ export function CtaBand({ settings }: { settings: Settings }) {
   );
 }
 
-export function WhatsAppFloat({ number, firmName }: { number: string; firmName: string }) {
+export function WhatsAppFloat({ number, firmName, message }: { number: string; firmName: string; message: string }) {
   if (!number) return null;
   return (
     <a
-      href={whatsappHref(number, `Hello ${firmName}, I would like to discuss a legal matter.`)}
+      href={whatsappHref(number, fill(message, { firm: firmName }))}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat with us on WhatsApp"

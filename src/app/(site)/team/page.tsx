@@ -2,16 +2,19 @@ import type { Metadata } from "next";
 import { MailIcon, PhoneIcon } from "@/components/icons";
 import { JsonLd } from "@/components/site/JsonLd";
 import { CtaBand, PageHero } from "@/components/site/Sections";
-import { getSettings, getTeam } from "@/lib/data";
+import { getContent, getSettings, getTeam } from "@/lib/data";
 import { breadcrumbSchema, pageMetadata } from "@/lib/seo";
 import { absoluteUrl, renderMarkdown, siteUrl, telHref } from "@/lib/utils";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSettings();
+  const [settings, content] = await Promise.all([getSettings(), getContent()]);
+  const page = content["team.page"];
   return pageMetadata({
     settings,
-    title: "Our Team",
-    description: `Meet the advocates and legal professionals at ${settings.firmName}.`,
+    title: page.metaTitle,
+    description:
+      page.metaDescription ||
+      `Meet the advocates and legal professionals at ${settings.firmName}.`,
     path: "/team",
   });
 }
@@ -25,7 +28,8 @@ function initials(name: string) {
 }
 
 export default async function TeamPage() {
-  const [settings, team] = await Promise.all([getSettings(), getTeam()]);
+  const [settings, content, team] = await Promise.all([getSettings(), getContent(), getTeam()]);
+  const page = content["team.page"];
   return (
     <>
       <JsonLd
@@ -45,9 +49,9 @@ export default async function TeamPage() {
         ]}
       />
       <PageHero
-        eyebrow="Our Team"
-        title="The people behind your case"
-        intro="Dedicated legal professionals committed to protecting your interests."
+        eyebrow={page.eyebrow}
+        title={page.title}
+        intro={page.intro}
         crumbs={[
           { name: "Home", href: "/" },
           { name: "Our Team", href: "/team" },
@@ -97,10 +101,10 @@ export default async function TeamPage() {
               </div>
             </article>
           ))}
-          {team.length === 0 && <p className="text-muted">Team profiles coming soon.</p>}
+          {team.length === 0 && <p className="text-muted">{page.emptyText}</p>}
         </div>
       </section>
-      <CtaBand settings={settings} />
+      <CtaBand settings={settings} content={content} />
     </>
   );
 }

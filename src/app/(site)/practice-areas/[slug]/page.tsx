@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import { ArrowRightIcon, MailIcon, PhoneIcon, PracticeIcon } from "@/components/icons";
 import { JsonLd } from "@/components/site/JsonLd";
 import { CtaBand, PageHero } from "@/components/site/Sections";
-import { getPracticeArea, getPracticeAreas, getSettings } from "@/lib/data";
+import { fill } from "@/lib/content";
+import { getContent, getPracticeArea, getPracticeAreas, getSettings } from "@/lib/data";
 import { breadcrumbSchema, pageMetadata } from "@/lib/seo";
 import { absoluteUrl, renderMarkdown, siteUrl, telHref } from "@/lib/utils";
 
@@ -25,8 +26,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PracticeAreaPage({ params }: Props) {
   const { slug } = await params;
-  const [settings, area, areas] = await Promise.all([getSettings(), getPracticeArea(slug), getPracticeAreas()]);
+  const [settings, content, area, areas] = await Promise.all([getSettings(), getContent(), getPracticeArea(slug), getPracticeAreas()]);
   if (!area) notFound();
+  const t = content["practice.detail"];
+  const others = areas.filter((a) => a.id !== area.id);
 
   const path = `/practice-areas/${area.slug}`;
   return (
@@ -51,7 +54,7 @@ export default async function PracticeAreaPage({ params }: Props) {
         ]}
       />
       <PageHero
-        eyebrow="Practice Area"
+        eyebrow={t.eyebrow}
         title={area.title}
         intro={area.summary}
         crumbs={[
@@ -80,12 +83,14 @@ export default async function PracticeAreaPage({ params }: Props) {
               <span className="grid h-16 w-16 place-items-center rounded-full border border-gold-400/40 bg-gold-500/10 text-gold-300">
                 <PracticeIcon name={area.icon} width={30} height={30} />
               </span>
-              <h2 className="mt-6 font-serif text-[1.75rem] leading-tight font-semibold">
-                Need help with {area.title.toLowerCase()}?
-              </h2>
-              <p className="mt-3 text-white/70">Tell us about your situation and we will advise on the best way forward.</p>
+              {t.helpTitle && (
+                <h2 className="mt-6 font-serif text-[1.75rem] leading-tight font-semibold">
+                  {fill(t.helpTitle, { area: area.title.toLowerCase() })}
+                </h2>
+              )}
+              {t.helpText && <p className="mt-3 text-white/70">{t.helpText}</p>}
               <Link href={`/contact?area=${encodeURIComponent(area.title)}`} className="btn-gold mt-6 w-full">
-                Request a Consultation
+                {t.helpButton}
               </Link>
               <div className="mt-6 space-y-3 text-sm">
                 {settings.phone && (
@@ -101,13 +106,12 @@ export default async function PracticeAreaPage({ params }: Props) {
               </div>
             </div>
 
+            {others.length > 0 && (
             <nav aria-label="Other practice areas" className="card p-7">
-              <h2 className="font-serif text-2xl font-semibold text-navy-900">Other practice areas</h2>
+              {t.otherTitle && <h2 className="font-serif text-2xl font-semibold text-navy-900">{t.otherTitle}</h2>}
               <div className="mt-3 h-px w-12 bg-gradient-to-r from-gold-500 to-transparent" />
               <ul className="mt-4 divide-y divide-cream-200">
-                {areas
-                  .filter((a) => a.id !== area.id)
-                  .map((a) => (
+                {others.map((a) => (
                     <li key={a.id}>
                       <Link
                         href={`/practice-areas/${a.slug}`}
@@ -121,10 +125,11 @@ export default async function PracticeAreaPage({ params }: Props) {
                   ))}
               </ul>
             </nav>
+            )}
           </aside>
         </div>
       </section>
-      <CtaBand settings={settings} />
+      <CtaBand settings={settings} content={content} />
     </>
   );
 }

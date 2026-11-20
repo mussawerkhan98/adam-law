@@ -1,18 +1,21 @@
 import type { Metadata } from "next";
 import { ClockIcon, MailIcon, PhoneIcon, PinIcon, WhatsAppIcon } from "@/components/icons";
 import { JsonLd } from "@/components/site/JsonLd";
-import { PageHero } from "@/components/site/Sections";
-import { getPracticeAreas, getSettings } from "@/lib/data";
+import { PageHero, RichTitle } from "@/components/site/Sections";
+import { getContent, getPracticeAreas, getSettings } from "@/lib/data";
 import { breadcrumbSchema, pageMetadata } from "@/lib/seo";
 import { telHref, whatsappHref } from "@/lib/utils";
 import { ContactForm } from "./ContactForm";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSettings();
+  const [settings, content] = await Promise.all([getSettings(), getContent()]);
+  const page = content["contact.page"];
   return pageMetadata({
     settings,
-    title: "Contact Us",
-    description: `Contact ${settings.firmName}${settings.city ? ` in ${settings.city}` : ""} to book a consultation.${
+    title: page.metaTitle,
+    description:
+      page.metaDescription ||
+      `Contact ${settings.firmName}${settings.city ? ` in ${settings.city}` : ""} to book a consultation.${
       settings.phone ? ` Call ${settings.phone}.` : ""
     }`,
     path: "/contact",
@@ -20,7 +23,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ContactPage({ searchParams }: { searchParams: Promise<{ area?: string }> }) {
-  const [{ area }, settings, areas] = await Promise.all([searchParams, getSettings(), getPracticeAreas()]);
+  const [{ area }, settings, content, areas] = await Promise.all([searchParams, getSettings(), getContent(), getPracticeAreas()]);
+  const { "contact.page": page, "contact.panel": panel } = content;
   const fullAddress = [settings.address, settings.city, settings.region, settings.country].filter(Boolean).join(", ");
 
   const items = [
@@ -45,9 +49,9 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
         ])}
       />
       <PageHero
-        eyebrow="Contact"
-        title="Book a consultation"
-        intro="Tell us briefly about your matter. All enquiries are treated in strict confidence."
+        eyebrow={page.eyebrow}
+        title={page.title}
+        intro={page.intro}
         crumbs={[
           { name: "Home", href: "/" },
           { name: "Contact", href: "/contact" },
@@ -56,15 +60,11 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
       <section className="section paper">
         <div className="container-x grid items-start gap-10 lg:grid-cols-[0.8fr_1.2fr]">
           <div className="hero-pattern overflow-hidden rounded-xl p-8 text-white shadow-2xl shadow-navy-900/25 md:p-10 lg:sticky lg:top-32">
-            <p className="eyebrow on-dark">Get in Touch</p>
+            {panel.eyebrow && <p className="eyebrow on-dark">{panel.eyebrow}</p>}
             <h2 className="mt-5 font-serif text-[2.2rem] leading-tight font-semibold">
-              We&rsquo;re here <span className="text-gold-gradient italic">to help</span>
+              <RichTitle text={panel.title} />
             </h2>
-            <p className="mt-4 leading-relaxed text-white/65">
-              {items.length
-                ? "Reach us by phone, WhatsApp or email, or send the form and we will respond promptly."
-                : "Send the form and we will respond promptly to arrange a convenient time to talk."}
-            </p>
+            {panel.text && <p className="mt-4 leading-relaxed text-white/65">{panel.text}</p>}
             {items.length > 0 && (
               <ul className="mt-9 space-y-6">
                 {items.map(({ Icon, label, value, href }) => (
@@ -90,15 +90,15 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
                 ))}
               </ul>
             )}
+            {panel.steps.length > 0 && (
+            <>
             <div className="gold-hairline mt-10 opacity-50" />
-            <p className="mt-8 font-display text-xs font-semibold tracking-[0.2em] text-gold-300 uppercase">What happens next</p>
+            {panel.nextTitle && (
+              <p className="mt-8 font-display text-xs font-semibold tracking-[0.2em] text-gold-300 uppercase">{panel.nextTitle}</p>
+            )}
             <ol className="mt-5 space-y-4 text-sm text-white/70">
-              {[
-                "We review your enquiry in strict confidence.",
-                "We contact you to arrange a consultation.",
-                "You receive clear advice on your options and fees.",
-              ].map((step, i) => (
-                <li key={step} className="flex gap-3">
+              {panel.steps.map(({ text: step }, i) => (
+                <li key={i} className="flex gap-3">
                   <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-gold-500/15 font-display text-[0.7rem] text-gold-300">
                     {i + 1}
                   </span>
@@ -106,8 +106,10 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
                 </li>
               ))}
             </ol>
+            </>
+            )}
           </div>
-          <ContactForm areas={areas.map((a) => a.title)} defaultArea={area} />
+          <ContactForm areas={areas.map((a) => a.title)} defaultArea={area} text={content["contact.form"]} />
         </div>
       </section>
 

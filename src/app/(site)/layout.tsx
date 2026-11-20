@@ -3,7 +3,7 @@ import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
 import { JsonLd } from "@/components/site/JsonLd";
 import { WhatsAppFloat } from "@/components/site/Sections";
-import { getPosts, getPracticeAreas, getSettings } from "@/lib/data";
+import { getContent, getPosts, getPracticeAreas, getSettings } from "@/lib/data";
 import { legalServiceSchema } from "@/lib/seo";
 import { formatDate } from "@/lib/utils";
 
@@ -24,7 +24,15 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
-  const [settings, areas, posts] = await Promise.all([getSettings(), getPracticeAreas(), getPosts(3)]);
+  const [settings, content, areas, posts] = await Promise.all([getSettings(), getContent(), getPracticeAreas(), getPosts(3)]);
+  const headerText = {
+    "header.nav": content["header.nav"],
+    "header.aboutMenu": content["header.aboutMenu"],
+    "header.practiceMenu": content["header.practiceMenu"],
+    "header.insightsMenu": content["header.insightsMenu"],
+    "header.consultCard": content["header.consultCard"],
+    "shared.cta": content["shared.cta"],
+  };
   // Only what the menus need — keeps long article/practice text out of the client bundle.
   const menuAreas = areas.map(({ title, slug, summary, icon }) => ({ title, slug, summary, icon }));
   const menuPosts = posts.map(({ title, slug, publishedAt }) => ({ title, slug, date: formatDate(publishedAt) }));
@@ -46,10 +54,11 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         logoUrl={settings.logoUrl}
         areas={menuAreas}
         posts={menuPosts}
+        text={headerText}
       />
       <main id="main">{children}</main>
-      <Footer settings={settings} areas={areas} />
-      <WhatsAppFloat number={settings.whatsapp} firmName={settings.firmName} />
+      <Footer settings={settings} areas={areas} content={content} />
+      <WhatsAppFloat number={settings.whatsapp} firmName={settings.firmName} message={content["shared.cta"].whatsappMessage} />
     </>
   );
 }

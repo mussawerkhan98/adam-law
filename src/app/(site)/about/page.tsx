@@ -3,38 +3,35 @@ import Link from "next/link";
 import { ArrowRightIcon, PracticeIcon } from "@/components/icons";
 import { JsonLd } from "@/components/site/JsonLd";
 import { CtaBand, PageHero, SectionHeading } from "@/components/site/Sections";
-import { getPracticeAreas, getSettings, getTeam } from "@/lib/data";
+import { getContent, getPracticeAreas, getSettings, getTeam } from "@/lib/data";
 import { breadcrumbSchema, pageMetadata } from "@/lib/seo";
 import { renderMarkdown } from "@/lib/utils";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSettings();
+  const [settings, content] = await Promise.all([getSettings(), getContent()]);
+  const page = content["about.page"];
   return pageMetadata({
     settings,
-    title: "About Us",
-    description: `Learn about ${settings.firmName}${settings.city ? ` in ${settings.city}` : ""} — our values, experience and approach to legal representation.`,
+    title: page.metaTitle,
+    description:
+      page.metaDescription ||
+      `Learn about ${settings.firmName}${settings.city ? ` in ${settings.city}` : ""} — our values, experience and approach to legal representation.`,
     path: "/about",
   });
 }
 
-const VALUES = [
-  { icon: "scale", title: "Integrity", text: "Honest advice, even when it is not what you hoped to hear." },
-  { icon: "shield", title: "Confidentiality", text: "Your information is protected with the utmost discretion." },
-  { icon: "document", title: "Diligence", text: "Thorough preparation for every hearing, filing and negotiation." },
-  { icon: "users", title: "Accessibility", text: "Clear communication and prompt updates throughout your matter." },
-];
-
 export default async function AboutPage() {
-  const [settings, team, areas] = await Promise.all([getSettings(), getTeam(), getPracticeAreas()]);
+  const [settings, content, team, areas] = await Promise.all([getSettings(), getContent(), getTeam(), getPracticeAreas()]);
+  const { "about.page": page, "about.story": story, "about.values": values } = content;
   const lead = team[0];
   const image = settings.aboutImageUrl || lead?.photoUrl;
   return (
     <>
       <JsonLd data={breadcrumbSchema([{ name: "Home", path: "/" }, { name: "About", path: "/about" }])} />
       <PageHero
-        eyebrow="About Us"
-        title={settings.aboutTitle || `About ${settings.firmName}`}
-        intro={settings.tagline}
+        eyebrow={page.eyebrow}
+        title={page.title || settings.aboutTitle || `About ${settings.firmName}`}
+        intro={page.intro || settings.tagline}
         crumbs={[
           { name: "Home", href: "/" },
           { name: "About", href: "/about" },
@@ -44,17 +41,17 @@ export default async function AboutPage() {
       <section className="section">
         <div className="container-x grid gap-16 lg:grid-cols-[1.15fr_0.85fr] lg:gap-20">
           <div className="reveal">
-            <p className="eyebrow mb-6">Who We Are</p>
+            {story.eyebrow && <p className="eyebrow mb-6">{story.eyebrow}</p>}
             <div
               className="content text-[1.1rem] first-letter:float-left first-letter:mt-1 first-letter:mr-3 first-letter:font-serif first-letter:text-7xl first-letter:leading-[0.8] first-letter:font-bold first-letter:text-gold-600"
               dangerouslySetInnerHTML={{ __html: renderMarkdown(settings.aboutBody) }}
             />
             <div className="mt-12 flex flex-wrap items-center gap-6">
               <Link href="/contact" className="btn-gold">
-                Book a Consultation <ArrowRightIcon width={16} height={16} />
+                {story.primaryButton} <ArrowRightIcon width={16} height={16} />
               </Link>
               <Link href="/team" className="link-arrow">
-                Meet the team <ArrowRightIcon width={16} height={16} />
+                {story.secondaryLink} <ArrowRightIcon width={16} height={16} />
               </Link>
             </div>
           </div>
@@ -79,7 +76,7 @@ export default async function AboutPage() {
             </div>
             {areas.length > 0 && (
               <div className="card reveal p-8">
-                <h2 className="font-serif text-2xl font-semibold text-navy-900">We advise on</h2>
+                {story.adviseTitle && <h2 className="font-serif text-2xl font-semibold text-navy-900">{story.adviseTitle}</h2>}
                 <div className="mt-3 h-px w-12 bg-gradient-to-r from-gold-500 to-transparent" />
                 <ul className="mt-5 divide-y divide-cream-200">
                   {areas.map((a) => (
@@ -101,12 +98,13 @@ export default async function AboutPage() {
         </div>
       </section>
 
+      {values.show && values.items.length > 0 && (
       <section className="section paper border-y border-cream-200">
         <div className="container-x">
-          <SectionHeading align="center" eyebrow="Our Values" title="The principles *behind our practice*" />
+          <SectionHeading align="center" eyebrow={values.eyebrow} title={values.title} />
           <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {VALUES.map((v, i) => (
-              <div key={v.title} className="group card card-hover reveal p-8">
+            {values.items.map((v, i) => (
+              <div key={i} className="group card card-hover reveal p-8">
                 <div className="flex items-center justify-between">
                   <span className="grid h-14 w-14 place-items-center rounded-full bg-navy-900 text-gold-300 transition group-hover:bg-gradient-to-br group-hover:from-gold-300 group-hover:to-gold-600 group-hover:text-navy-950">
                     <PracticeIcon name={v.icon} width={24} height={24} />
@@ -120,8 +118,9 @@ export default async function AboutPage() {
           </div>
         </div>
       </section>
+      )}
 
-      <CtaBand settings={settings} />
+      <CtaBand settings={settings} content={content} />
     </>
   );
 }

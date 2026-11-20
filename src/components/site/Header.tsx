@@ -15,6 +15,7 @@ import {
   PracticeIcon,
   WhatsAppIcon,
 } from "@/components/icons";
+import type { Content } from "@/lib/content";
 
 // Local copies so this client component doesn't pull lib/utils (and its Markdown parser) into the browser bundle.
 // Desktop: About ▾ / Practice Areas ▾ (mega menu) / Insights ▾ / Contact. Mobile: full-screen menu with accordions.
@@ -25,6 +26,13 @@ type MenuArea = { title: string; slug: string; summary: string; icon: string };
 type MenuPost = { title: string; slug: string; date: string };
 type MenuKey = "about" | "practice" | "insights";
 
+export type HeaderText = Pick<
+  Content,
+  "header.nav" | "header.aboutMenu" | "header.practiceMenu" | "header.insightsMenu" | "header.consultCard" | "shared.cta"
+>;
+type MenuText = { eyebrow: string; title: string; intro: string; viewAll: string; heading: string; helpText: string; helpLink: string };
+type ConsultCard = Content["header.consultCard"];
+
 type Props = {
   firmName: string;
   phone: string;
@@ -34,25 +42,35 @@ type Props = {
   logoUrl: string;
   areas: MenuArea[];
   posts: MenuPost[];
+  text: HeaderText;
 };
 
-const ABOUT_LINKS = [
-  { href: "/about", icon: "scale", title: "About the Chamber", text: "Our story, values and approach" },
-  { href: "/team", icon: "users", title: "Our Team", text: "The advocates behind your case" },
-  { href: "/faq", icon: "document", title: "FAQ", text: "Answers before you call" },
-];
+// Pages the About menu links to, in the order of its editable links (Admin → Pages & sections → Menu).
+// The last one (Contact) only appears in the desktop panel, so its grid matches the others.
+const ABOUT_HREFS = ["/about", "/team", "/faq", "/contact"];
+
+/** "Committed to *your rights.*" → plain text with the starred part in gold italics. */
+function Emph({ text }: { text: string }) {
+  return (
+    <>
+      {text.split(/\*([^*]+)\*/g).map((part, i) =>
+        i % 2 ? (
+          <span key={i} className="text-gold-600 italic">
+            {part}
+          </span>
+        ) : (
+          part
+        ),
+      )}
+    </>
+  );
+}
 
 /** "Adam Law Chamber" → ["Adam", "Law Chamber"] for the stacked wordmark. */
 function splitName(name: string): [string, string] {
   const [first, ...rest] = name.trim().split(/\s+/);
   return [first ?? name, rest.join(" ")];
 }
-
-// The About mega menu also links to Contact so its grid matches the others.
-const ABOUT_MENU = [
-  ...ABOUT_LINKS,
-  { href: "/contact", icon: "building", title: "Contact & Office", text: "Visit, call or send us a message" },
-];
 
 const panelState = (open: boolean) =>
   open ? "visible translate-y-0 opacity-100" : "pointer-events-none invisible -translate-y-2 opacity-0";
@@ -104,26 +122,22 @@ function MegaItem({
 function MegaPanel({
   id,
   open,
-  eyebrow,
-  title,
-  emphasis,
-  intro,
-  viewAll,
-  heading,
-  help,
+  text,
+  viewAllHref,
+  helpHref,
+  card,
+  whatsappLabel,
   phone,
   whatsapp,
   children,
 }: {
   id: string;
   open: boolean;
-  eyebrow: string;
-  title: string;
-  emphasis: string;
-  intro: string;
-  viewAll: { href: string; label: string };
-  heading: string;
-  help: { text: string; href: string; label: string };
+  text: MenuText;
+  viewAllHref: string;
+  helpHref: string;
+  card: ConsultCard;
+  whatsappLabel: string;
   phone: string;
   whatsapp: string;
   children: React.ReactNode;
@@ -135,44 +149,53 @@ function MegaPanel({
           <div className="grid min-h-[20rem] grid-cols-[15rem_1fr_17rem]">
             {/* Intro */}
             <div className="flex flex-col border-r border-cream-200 bg-cream-50 p-8">
-              <p className="font-display text-[0.7rem] font-semibold tracking-[0.22em] text-gold-600 uppercase">{eyebrow}</p>
+              {text.eyebrow && (
+                <p className="font-display text-[0.7rem] font-semibold tracking-[0.22em] text-gold-600 uppercase">{text.eyebrow}</p>
+              )}
               <p className="mt-4 font-serif text-[1.9rem] leading-[1.1] font-semibold text-navy-900">
-                {title} <span className="text-gold-600 italic">{emphasis}</span>
+                <Emph text={text.title} />
               </p>
-              <p className="mt-4 text-sm leading-relaxed text-muted">{intro}</p>
+              {text.intro && <p className="mt-4 text-sm leading-relaxed text-muted">{text.intro}</p>}
               <Link
-                href={viewAll.href}
+                href={viewAllHref}
                 className="mt-auto inline-flex items-center gap-2 pt-8 text-sm font-semibold whitespace-nowrap text-navy-900 transition hover:text-gold-700"
               >
-                {viewAll.label} <ArrowRightIcon width={15} height={15} />
+                {text.viewAll} <ArrowRightIcon width={15} height={15} />
               </Link>
             </div>
 
             {/* Links */}
             <div className="p-8">
-              <p className="border-b border-cream-200 pb-3 font-display text-[0.7rem] font-semibold tracking-[0.22em] text-muted uppercase">
-                {heading}
-              </p>
+              {text.heading && (
+                <p className="border-b border-cream-200 pb-3 font-display text-[0.7rem] font-semibold tracking-[0.22em] text-muted uppercase">
+                  {text.heading}
+                </p>
+              )}
               <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-1">{children}</ul>
             </div>
 
             {/* Consultation card */}
             <div className="p-4 pl-0">
               <div className="hero-pattern flex h-full flex-col overflow-hidden rounded-xl p-6 text-white">
-                <p className="font-display text-[0.68rem] font-semibold tracking-[0.22em] text-gold-300 uppercase">First step</p>
-                <p className="mt-2 font-serif text-[1.75rem] leading-tight font-semibold">Free first consultation</p>
+                {card.eyebrow && (
+                  <p className="font-display text-[0.68rem] font-semibold tracking-[0.22em] text-gold-300 uppercase">{card.eyebrow}</p>
+                )}
+                {card.title && <p className="mt-2 font-serif text-[1.75rem] leading-tight font-semibold">{card.title}</p>}
                 <div className="mt-5 grid grid-cols-2 gap-3">
-                  <div className="rounded-lg border border-white/10 bg-white/[0.04] p-3.5">
-                    <p className="text-gold-gradient font-display text-xl font-semibold">100%</p>
-                    <p className="mt-0.5 text-xs text-white/65">Confidential</p>
-                  </div>
-                  <div className="rounded-lg border border-white/10 bg-white/[0.04] p-3.5">
-                    <p className="text-gold-gradient font-display text-xl font-semibold">1-to-1</p>
-                    <p className="mt-0.5 text-xs text-white/65">With an advocate</p>
-                  </div>
+                  {[
+                    [card.stat1Value, card.stat1Label],
+                    [card.stat2Value, card.stat2Label],
+                  ]
+                    .filter(([v, l]) => v || l)
+                    .map(([v, l], i) => (
+                      <div key={i} className="rounded-lg border border-white/10 bg-white/[0.04] p-3.5">
+                        <p className="text-gold-gradient font-display text-xl font-semibold">{v}</p>
+                        <p className="mt-0.5 text-xs text-white/65">{l}</p>
+                      </div>
+                    ))}
                 </div>
                 <Link href="/contact" className="btn-gold mt-6 self-start !py-2.5 !pr-2.5 !pl-5">
-                  Book now
+                  {card.button}
                   <span className="grid h-7 w-7 place-items-center rounded-full bg-navy-950 text-gold-300">
                     <ArrowUpRightIcon width={14} height={14} />
                   </span>
@@ -184,10 +207,12 @@ function MegaPanel({
           {/* Help bar */}
           <div className="flex items-center justify-between border-t border-cream-200 bg-cream-50 px-8 py-3.5 text-sm">
             <p className="text-muted">
-              {help.text}{" "}
-              <Link href={help.href} className="font-semibold text-navy-900 underline-offset-4 hover:text-gold-700 hover:underline">
-                {help.label}
-              </Link>
+              {text.helpText}{" "}
+              {text.helpLink && (
+                <Link href={helpHref} className="font-semibold text-navy-900 underline-offset-4 hover:text-gold-700 hover:underline">
+                  {text.helpLink}
+                </Link>
+              )}
             </p>
             {whatsapp ? (
               <a
@@ -196,7 +221,7 @@ function MegaPanel({
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 font-semibold text-navy-900 transition hover:text-gold-700"
               >
-                <WhatsAppIcon width={17} height={17} className="text-[#25D366]" /> WhatsApp us <ArrowRightIcon width={15} height={15} />
+                <WhatsAppIcon width={17} height={17} className="text-[#25D366]" /> {whatsappLabel} <ArrowRightIcon width={15} height={15} />
               </a>
             ) : phone ? (
               <a href={telHref(phone)} className="flex items-center gap-2 font-semibold text-navy-900 transition hover:text-gold-700">
@@ -204,7 +229,7 @@ function MegaPanel({
               </a>
             ) : (
               <Link href="/contact" className="flex items-center gap-2 font-semibold text-navy-900 transition hover:text-gold-700">
-                Contact us <ArrowRightIcon width={15} height={15} />
+                {card.button} <ArrowRightIcon width={15} height={15} />
               </Link>
             )}
           </div>
@@ -214,7 +239,14 @@ function MegaPanel({
   );
 }
 
-export function Header({ firmName, phone, email, whatsapp, officeHours, logoUrl, areas, posts }: Props) {
+export function Header({ firmName, phone, email, whatsapp, officeHours, logoUrl, areas, posts, text }: Props) {
+  const nav = text["header.nav"];
+  const card = text["header.consultCard"];
+  const whatsappLabel = text["shared.cta"].whatsappLabel;
+  const aboutMenu = text["header.aboutMenu"].links
+    .map((l, i) => ({ ...l, href: ABOUT_HREFS[i] }))
+    .filter((l) => l.href && l.title);
+  const aboutLinks = aboutMenu.filter((l) => l.href !== "/contact");
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [menu, setMenu] = useState<MenuKey | null>(null);
@@ -279,12 +311,12 @@ export function Header({ firmName, phone, email, whatsapp, officeHours, logoUrl,
   useEffect(() => () => cancelClose(), []);
 
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
-  const aboutActive = ABOUT_LINKS.some((l) => isActive(l.href));
+  const aboutActive = aboutLinks.some((l) => isActive(l.href));
   const hasTopBar = Boolean(phone || email || officeHours || whatsapp);
   const triggers: { key: MenuKey; label: string; active: boolean }[] = [
-    { key: "about", label: "About", active: aboutActive },
-    { key: "practice", label: "Practice Areas", active: isActive("/practice-areas") },
-    { key: "insights", label: "Insights", active: isActive("/blog") },
+    { key: "about", label: nav.about, active: aboutActive },
+    { key: "practice", label: nav.practice, active: isActive("/practice-areas") },
+    { key: "insights", label: nav.insights, active: isActive("/blog") },
   ];
 
   const linkCls = (on: boolean) =>
@@ -383,7 +415,7 @@ export function Header({ firmName, phone, email, whatsapp, officeHours, logoUrl,
               ))}
               <li onMouseEnter={() => setMenu(null)}>
                 <Link href="/contact" aria-current={isActive("/contact") ? "page" : undefined} className={linkCls(isActive("/contact"))}>
-                  Contact
+                  {nav.contact}
                   {underline(isActive("/contact"))}
                 </Link>
               </li>
@@ -397,7 +429,7 @@ export function Header({ firmName, phone, email, whatsapp, officeHours, logoUrl,
               </a>
             )}
             <Link href="/contact" className="btn-gold !py-3 !pr-3 !pl-6">
-              Free Consultation
+              {nav.button}
               <span className="grid h-7 w-7 place-items-center rounded-full bg-navy-950 text-gold-300">
                 <ArrowUpRightIcon width={14} height={14} />
               </span>
@@ -421,17 +453,15 @@ export function Header({ firmName, phone, email, whatsapp, officeHours, logoUrl,
         <MegaPanel
           id="menu-about"
           open={menu === "about"}
-          eyebrow="About Us"
-          title="Committed to"
-          emphasis="your rights."
-          intro="A client-focused chamber offering dependable advice and strong representation."
-          viewAll={{ href: "/about", label: "More about the chamber" }}
-          heading="Get to know us"
-          help={{ text: "Have a question about working with us?", href: "/faq", label: "Read the FAQ" }}
+          text={text["header.aboutMenu"]}
+          viewAllHref="/about"
+          helpHref="/faq"
+          card={card}
+          whatsappLabel={whatsappLabel}
           phone={phone}
           whatsapp={whatsapp}
         >
-          {ABOUT_MENU.map((l) => (
+          {aboutMenu.map((l) => (
             <MegaItem key={l.href} href={l.href} icon={l.icon} title={l.title} text={l.text} current={isActive(l.href)} />
           ))}
         </MegaPanel>
@@ -439,13 +469,11 @@ export function Header({ firmName, phone, email, whatsapp, officeHours, logoUrl,
         <MegaPanel
           id="menu-practice"
           open={menu === "practice"}
-          eyebrow="Practice Areas"
-          title="Clear advice,"
-          emphasis="every matter."
-          intro="Advice and representation for individuals, families and businesses — from first consultation to final hearing."
-          viewAll={{ href: "/practice-areas", label: "View all practice areas" }}
-          heading="How we can help"
-          help={{ text: "Not sure which area fits your matter?", href: "/contact", label: "Speak to a lawyer" }}
+          text={text["header.practiceMenu"]}
+          viewAllHref="/practice-areas"
+          helpHref="/contact"
+          card={card}
+          whatsappLabel={whatsappLabel}
           phone={phone}
           whatsapp={whatsapp}
         >
@@ -464,13 +492,11 @@ export function Header({ firmName, phone, email, whatsapp, officeHours, logoUrl,
         <MegaPanel
           id="menu-insights"
           open={menu === "insights"}
-          eyebrow="Legal Insights"
-          title="Know where"
-          emphasis="you stand."
-          intro="Practical guides that explain legal issues in plain language."
-          viewAll={{ href: "/blog", label: "Browse all articles" }}
-          heading="Latest articles"
-          help={{ text: "Need advice on your own situation?", href: "/contact", label: "Speak to a lawyer" }}
+          text={text["header.insightsMenu"]}
+          viewAllHref="/blog"
+          helpHref="/contact"
+          card={card}
+          whatsappLabel={whatsappLabel}
           phone={phone}
           whatsapp={whatsapp}
         >
@@ -485,7 +511,13 @@ export function Header({ firmName, phone, email, whatsapp, officeHours, logoUrl,
               longTitle
             />
           ))}
-          <MegaItem href="/blog" icon="globe" title="All articles" text={posts.length ? "Browse every guide and update" : "New articles are coming soon"} current={false} />
+          <MegaItem
+            href="/blog"
+            icon="globe"
+            title={text["header.insightsMenu"].allTitle}
+            text={text["header.insightsMenu"].allText}
+            current={false}
+          />
         </MegaPanel>
 
         {/* ───────── Mobile navigation ───────── */}
@@ -501,11 +533,11 @@ export function Header({ firmName, phone, email, whatsapp, officeHours, logoUrl,
               <li className="animate-fade-up" style={{ animationDelay: "40ms" }}>
                 <details className="group border-b border-white/10" open={aboutActive}>
                   <summary className={`flex cursor-pointer items-center justify-between py-4 font-serif text-2xl ${aboutActive ? "text-gold-300" : "text-white/90"}`}>
-                    About
+                    {nav.about}
                     <ChevronDownIcon width={20} height={20} className="text-gold-500 transition-transform group-open:rotate-180" />
                   </summary>
                   <ul className="pb-4">
-                    {ABOUT_LINKS.map((l) => (
+                    {aboutLinks.map((l) => (
                       <li key={l.href}>
                         <Link href={l.href} className="flex items-center gap-3 rounded-lg px-2 py-2.5 text-white/75 transition hover:bg-white/5 hover:text-white">
                           <PracticeIcon name={l.icon} width={18} height={18} className="text-gold-400" /> {l.title}
@@ -521,7 +553,7 @@ export function Header({ firmName, phone, email, whatsapp, officeHours, logoUrl,
                   <summary
                     className={`flex cursor-pointer items-center justify-between py-4 font-serif text-2xl ${isActive("/practice-areas") ? "text-gold-300" : "text-white/90"}`}
                   >
-                    Practice Areas
+                    {nav.practice}
                     <ChevronDownIcon width={20} height={20} className="text-gold-500 transition-transform group-open:rotate-180" />
                   </summary>
                   <ul className="pb-4">
@@ -537,7 +569,7 @@ export function Header({ firmName, phone, email, whatsapp, officeHours, logoUrl,
                     ))}
                     <li>
                       <Link href="/practice-areas" className="mt-1 flex items-center gap-2 px-2 py-2.5 text-[0.78rem] font-semibold tracking-[0.12em] text-gold-300 uppercase">
-                        View all <ArrowRightIcon width={14} height={14} />
+                        {text["header.practiceMenu"].viewAll} <ArrowRightIcon width={14} height={14} />
                       </Link>
                     </li>
                   </ul>
@@ -545,8 +577,8 @@ export function Header({ firmName, phone, email, whatsapp, officeHours, logoUrl,
               </li>
 
               {[
-                { href: "/blog", label: "Insights" },
-                { href: "/contact", label: "Contact" },
+                { href: "/blog", label: nav.insights },
+                { href: "/contact", label: nav.contact },
               ].map((item, i) => (
                 <li key={item.href} className="animate-fade-up" style={{ animationDelay: `${120 + i * 40}ms` }}>
                   <Link
@@ -563,7 +595,7 @@ export function Header({ firmName, phone, email, whatsapp, officeHours, logoUrl,
 
               <li className="pt-8">
                 <Link href="/contact" className="btn-gold w-full">
-                  Book a Free Consultation
+                  {nav.mobileButton}
                 </Link>
               </li>
               {phone && (
@@ -576,7 +608,7 @@ export function Header({ firmName, phone, email, whatsapp, officeHours, logoUrl,
               {whatsapp && (
                 <li className="pt-3">
                   <a href={whatsappHref(whatsapp)} target="_blank" rel="noopener noreferrer" className="btn-outline w-full text-white">
-                    <WhatsAppIcon width={16} height={16} /> WhatsApp us
+                    <WhatsAppIcon width={16} height={16} /> {whatsappLabel}
                   </a>
                 </li>
               )}

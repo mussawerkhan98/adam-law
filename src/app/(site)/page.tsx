@@ -4,7 +4,7 @@ import { ArrowRightIcon, CheckIcon, MailIcon, PhoneIcon, PracticeIcon, QuoteIcon
 import { FaqList, PostCard } from "@/components/site/Cards";
 import { JsonLd } from "@/components/site/JsonLd";
 import { CtaBand, Ornament, PracticeCard, RichTitle, SectionHeading } from "@/components/site/Sections";
-import { getFaqs, getPosts, getPracticeAreas, getSettings, getTeam, getTestimonials } from "@/lib/data";
+import { getContent, getFaqs, getPosts, getPracticeAreas, getSettings, getTeam, getTestimonials } from "@/lib/data";
 import { faqSchema, pageMetadata } from "@/lib/seo";
 import { renderMarkdown, telHref, whatsappHref } from "@/lib/utils";
 
@@ -13,23 +13,10 @@ export async function generateMetadata(): Promise<Metadata> {
   return pageMetadata({ settings, path: "/" });
 }
 
-const PILLARS = [
-  { icon: "users", title: "Personal attention", text: "You work directly with an experienced advocate, not a call centre." },
-  { icon: "document", title: "Clear, honest advice", text: "Your options and likely outcomes, explained in plain language." },
-  { icon: "briefcase", title: "Transparent fees", text: "Fees agreed in writing before work begins — no surprises." },
-  { icon: "shield", title: "Strategic representation", text: "A clear plan, careful preparation and strong advocacy." },
-];
-
-const PROCESS = [
-  { title: "Consultation", text: "Tell us about your situation in a confidential first meeting — in person, by phone or online." },
-  { title: "Assessment", text: "We review your documents, explain your rights and set out the realistic options." },
-  { title: "Strategy & action", text: "An agreed plan and fee, then careful preparation, negotiation and representation." },
-  { title: "Resolution", text: "We keep you informed at every stage until your matter is resolved." },
-];
-
 export default async function HomePage() {
-  const [settings, areas, testimonials, faqs, posts, team] = await Promise.all([
+  const [settings, content, areas, testimonials, faqs, posts, team] = await Promise.all([
     getSettings(),
+    getContent(),
     getPracticeAreas(),
     getTestimonials(),
     getFaqs(),
@@ -44,6 +31,17 @@ export default async function HomePage() {
     [settings.stat4Value, settings.stat4Label],
   ].filter(([v, l]) => v && l);
   const lead = team[0];
+  const {
+    "home.hero": hero,
+    "home.pillars": pillars,
+    "home.practice": practice,
+    "home.about": about,
+    "home.process": process,
+    "home.testimonials": testimonialsText,
+    "home.faq": faqText,
+    "home.posts": postsText,
+  } = content;
+  const showTestimonials = testimonialsText.show && testimonials.length > 0;
   const aboutImage = settings.aboutImageUrl || lead?.photoUrl;
 
   return (
@@ -72,24 +70,27 @@ export default async function HomePage() {
             )}
             <div className="mt-11 flex animate-fade-up flex-wrap gap-4" style={{ animationDelay: "240ms" }}>
               <Link href="/contact" className="btn-gold">
-                Book a Free Consultation <ArrowRightIcon width={16} height={16} />
+                {hero.primaryButton} <ArrowRightIcon width={16} height={16} />
               </Link>
               {settings.phone ? (
                 <a href={telHref(settings.phone)} className="btn-outline text-white">
                   <PhoneIcon width={16} height={16} /> {settings.phone}
                 </a>
               ) : (
-                <Link href="/practice-areas" className="btn-outline text-white">
-                  Our Practice Areas
-                </Link>
+                hero.secondaryButton && (
+                  <Link href="/practice-areas" className="btn-outline text-white">
+                    {hero.secondaryButton}
+                  </Link>
+                )
               )}
             </div>
+            {hero.checks.length > 0 && (
             <ul
               className="mt-12 flex animate-fade-up flex-wrap gap-x-8 gap-y-3 text-sm text-white/65"
               style={{ animationDelay: "320ms" }}
             >
-              {["Strictly confidential", "Clear, agreed fees", "Personal attention"].map((t) => (
-                <li key={t} className="flex items-center gap-2.5">
+              {hero.checks.map(({ text: t }, i) => (
+                <li key={i} className="flex items-center gap-2.5">
                   <span className="grid h-5 w-5 place-items-center rounded-full bg-gold-500/15 text-gold-300">
                     <CheckIcon width={12} height={12} />
                   </span>
@@ -97,6 +98,7 @@ export default async function HomePage() {
                 </li>
               ))}
             </ul>
+            )}
           </div>
 
           {/* Courthouse-arch frame with the logo (or the hero photo, if one is set) */}
@@ -123,15 +125,17 @@ export default async function HomePage() {
                 )}
               </div>
             </div>
+            {(hero.badgeTitle || hero.badgeText) && (
             <div className="absolute top-8 -left-14 flex items-center gap-3 rounded-lg border border-white/10 bg-navy-950/80 px-4 py-3 shadow-2xl backdrop-blur-md">
               <span className="grid h-10 w-10 place-items-center rounded-full bg-gold-500/15 text-gold-300">
                 <PracticeIcon name="shield" width={20} height={20} />
               </span>
               <span className="text-sm leading-tight">
-                <span className="block font-semibold text-white">100% Confidential</span>
-                <span className="text-white/55">Every enquiry, every case</span>
+                <span className="block font-semibold text-white">{hero.badgeTitle}</span>
+                <span className="text-white/55">{hero.badgeText}</span>
               </span>
             </div>
+            )}
             <div className="absolute -right-8 -bottom-6 rounded-lg bg-gradient-to-br from-gold-300 via-gold-400 to-gold-600 px-6 py-4 text-navy-950 shadow-2xl shadow-black/40">
               <p className="font-serif text-3xl leading-none font-bold">{settings.stat1Value || "Trusted"}</p>
               <p className="mt-1 text-xs font-semibold tracking-[0.12em] uppercase">{settings.stat1Label || "Legal counsel"}</p>
@@ -141,12 +145,13 @@ export default async function HomePage() {
       </section>
 
       {/* ───────── Pillars (overlaps the hero) ───────── */}
+      {pillars.show && pillars.items.length > 0 && (
       <section aria-label="Why clients choose us" className="relative z-10 -mt-24">
         <div className="container-x">
           <ul className="grid overflow-hidden rounded-xl border border-cream-200 bg-white shadow-[0_40px_80px_-40px_rgb(10_22_40/0.45)] sm:grid-cols-2 lg:grid-cols-4">
-            {PILLARS.map((p, i) => (
+            {pillars.items.map((p, i) => (
               <li
-                key={p.title}
+                key={i}
                 className={`group relative p-8 transition-colors duration-300 hover:bg-cream-50 ${
                   i > 0 ? "border-t border-cream-200 sm:border-t-0 lg:border-l" : ""
                 } ${i === 2 ? "sm:border-t lg:border-t-0" : ""} ${i === 3 ? "sm:border-t sm:border-l lg:border-t-0" : ""} ${
@@ -163,24 +168,25 @@ export default async function HomePage() {
           </ul>
         </div>
       </section>
+      )}
 
       {/* ───────── Practice areas ───────── */}
-      {areas.length > 0 && (
+      {practice.show && areas.length > 0 && (
         <section className="section">
           <div className="container-x">
             <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
               <SectionHeading
-                eyebrow="Practice Areas"
-                title="Legal expertise *you can rely on*"
-                intro="Focused, practical representation across the matters that affect individuals, families and businesses."
+                eyebrow={practice.eyebrow}
+                title={practice.title}
+                intro={practice.intro}
               />
               <Link href="/practice-areas" className="link-arrow shrink-0">
-                View all practice areas <ArrowRightIcon width={16} height={16} />
+                {practice.linkLabel} <ArrowRightIcon width={16} height={16} />
               </Link>
             </div>
             <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {areas.slice(0, 6).map((area, i) => (
-                <PracticeCard key={area.id} area={area} index={i} />
+                <PracticeCard key={area.id} area={area} index={i} linkLabel={content["shared.cta"].cardLink} />
               ))}
             </div>
           </div>
@@ -188,6 +194,7 @@ export default async function HomePage() {
       )}
 
       {/* ───────── About ───────── */}
+      {about.show && (
       <section className="section paper overflow-hidden border-y border-cream-200">
         <div className="container-x grid items-center gap-16 lg:grid-cols-[0.95fr_1.05fr] lg:gap-24">
           <div className="reveal relative mx-auto w-full max-w-md lg:mx-0">
@@ -206,15 +213,17 @@ export default async function HomePage() {
                 <img src="/brand/logo.png" alt="" width={640} height={714} loading="lazy" className="relative h-auto w-3/5" />
               </div>
             )}
-            <figure className="absolute -right-4 -bottom-8 max-w-[16rem] rounded-xl bg-navy-900 p-6 text-white shadow-2xl sm:-right-10">
-              <QuoteIcon width={26} height={26} className="text-gold-400" />
-              <blockquote className="mt-3 font-serif text-xl leading-snug italic">Your rights. Our commitment.</blockquote>
-              <div className="mt-4 h-px w-12 bg-gold-500" />
-            </figure>
+            {about.quote && (
+              <figure className="absolute -right-4 -bottom-8 max-w-[16rem] rounded-xl bg-navy-900 p-6 text-white shadow-2xl sm:-right-10">
+                <QuoteIcon width={26} height={26} className="text-gold-400" />
+                <blockquote className="mt-3 font-serif text-xl leading-snug italic">{about.quote}</blockquote>
+                <div className="mt-4 h-px w-12 bg-gold-500" />
+              </figure>
+            )}
           </div>
 
           <div className="reveal">
-            <SectionHeading eyebrow="About the Chamber" title={settings.aboutTitle || `About ${settings.firmName}`} />
+            <SectionHeading eyebrow={about.eyebrow} title={settings.aboutTitle || `About ${settings.firmName}`} />
             <div
               className="content mt-7 text-[1.05rem] text-muted"
               dangerouslySetInnerHTML={{ __html: renderMarkdown(settings.aboutBody) }}
@@ -232,33 +241,39 @@ export default async function HomePage() {
             )}
             <div className="mt-10 flex flex-wrap items-center gap-6">
               <Link href="/about" className="btn-navy">
-                More about us <ArrowRightIcon width={16} height={16} />
+                {about.primaryButton} <ArrowRightIcon width={16} height={16} />
               </Link>
               <Link href="/team" className="link-arrow">
-                Meet the team <ArrowRightIcon width={16} height={16} />
+                {about.secondaryLink} <ArrowRightIcon width={16} height={16} />
               </Link>
             </div>
           </div>
         </div>
       </section>
+      )}
 
       {/* ───────── How we work ───────── */}
+      {process.show && process.steps.length > 0 && (
       <section className="section hero-pattern overflow-hidden text-white">
         <div className="container-x">
           <SectionHeading
             light
             align="center"
-            eyebrow="How We Work"
-            title="A clear path from *first call to resolution*"
-            intro="No jargon and no surprises — just a straightforward process built around you."
+            eyebrow={process.eyebrow}
+            title={process.title}
+            intro={process.intro}
           />
-          <ol className="relative mt-20 grid gap-12 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+          <ol
+            className={`relative mt-20 grid gap-12 md:grid-cols-2 lg:gap-8 ${
+              process.steps.length === 3 ? "lg:grid-cols-3" : process.steps.length >= 4 ? "lg:grid-cols-4" : ""
+            }`}
+          >
             <span
               aria-hidden
               className="absolute top-8 right-[12%] left-[12%] hidden h-px bg-gradient-to-r from-transparent via-gold-500/50 to-transparent lg:block"
             />
-            {PROCESS.map((step, i) => (
-              <li key={step.title} className="reveal relative text-center">
+            {process.steps.map((step, i) => (
+              <li key={i} className="reveal relative text-center">
                 <span className="relative mx-auto grid h-16 w-16 place-items-center rounded-full border border-gold-400/50 bg-navy-900 font-display text-xl font-semibold text-gold-300 shadow-[0_0_0_8px_rgb(10_22_40)]">
                   {String(i + 1).padStart(2, "0")}
                 </span>
@@ -269,12 +284,13 @@ export default async function HomePage() {
           </ol>
         </div>
       </section>
+      )}
 
       {/* ───────── Testimonials ───────── */}
-      {testimonials.length > 0 && (
+      {showTestimonials && (
         <section className="section">
           <div className="container-x">
-            <SectionHeading align="center" eyebrow="Client Testimonials" title="What our *clients say*" />
+            <SectionHeading align="center" eyebrow={testimonialsText.eyebrow} title={testimonialsText.title} />
             <div className="mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {testimonials.slice(0, 6).map((t) => (
                 <figure key={t.id} className="card card-hover reveal flex flex-col p-8 md:p-9">
@@ -310,18 +326,18 @@ export default async function HomePage() {
       )}
 
       {/* ───────── FAQ ───────── */}
-      {faqs.length > 0 && (
-        <section className={`section ${testimonials.length > 0 ? "paper border-y border-cream-200" : ""}`}>
+      {faqText.show && faqs.length > 0 && (
+        <section className={`section ${showTestimonials ? "paper border-y border-cream-200" : ""}`}>
           <div className="container-x grid gap-14 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
             <div className="lg:sticky lg:top-32 lg:self-start">
               <SectionHeading
-                eyebrow="FAQ"
-                title="Common *questions*"
-                intro="Answers to questions clients often ask before their first consultation."
+                eyebrow={faqText.eyebrow}
+                title={faqText.title}
+                intro={faqText.intro}
               />
               <div className="mt-10 rounded-xl bg-navy-900 p-7 text-white">
-                <p className="font-serif text-2xl font-semibold">Still have a question?</p>
-                <p className="mt-2 text-white/65">Speak to us directly — the first conversation is free and confidential.</p>
+                {faqText.boxTitle && <p className="font-serif text-2xl font-semibold">{faqText.boxTitle}</p>}
+                {faqText.boxText && <p className="mt-2 text-white/65">{faqText.boxText}</p>}
                 <div className="mt-6 space-y-3 text-sm">
                   {settings.phone && (
                     <a href={telHref(settings.phone)} className="flex items-center gap-3 transition hover:text-gold-300">
@@ -346,10 +362,10 @@ export default async function HomePage() {
                 </div>
                 <div className="mt-7 flex flex-wrap gap-3">
                   <Link href="/contact" className="btn-gold !px-5 !py-3">
-                    Ask us <ArrowRightIcon width={14} height={14} />
+                    {faqText.primaryButton} <ArrowRightIcon width={14} height={14} />
                   </Link>
                   <Link href="/faq" className="btn-outline !px-5 !py-3 text-white">
-                    All FAQs
+                    {faqText.secondaryButton}
                   </Link>
                 </div>
               </div>
@@ -360,13 +376,13 @@ export default async function HomePage() {
       )}
 
       {/* ───────── Latest posts ───────── */}
-      {posts.length > 0 && (
-        <section className={`section ${testimonials.length > 0 ? "" : "paper border-t border-cream-200"}`}>
+      {postsText.show && posts.length > 0 && (
+        <section className={`section ${showTestimonials ? "" : "paper border-t border-cream-200"}`}>
           <div className="container-x">
             <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
-              <SectionHeading eyebrow="Legal Insights" title="Latest *articles*" />
+              <SectionHeading eyebrow={postsText.eyebrow} title={postsText.title} />
               <Link href="/blog" className="link-arrow shrink-0">
-                All articles <ArrowRightIcon width={16} height={16} />
+                {postsText.linkLabel} <ArrowRightIcon width={16} height={16} />
               </Link>
             </div>
             <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
@@ -378,7 +394,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      <CtaBand settings={settings} />
+      <CtaBand settings={settings} content={content} />
     </>
   );
 }

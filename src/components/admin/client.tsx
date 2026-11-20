@@ -22,14 +22,16 @@ export function ConfirmButton({
   children = "Delete",
   message = "Delete this item? This cannot be undone.",
   className,
+  ...rest
 }: {
   children?: React.ReactNode;
   message?: string;
   className?: string;
-}) {
+} & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "children" | "className" | "type" | "onClick">) {
   return (
     <button
       type="submit"
+      {...rest}
       onClick={(e) => {
         if (!confirm(message)) e.preventDefault();
       }}
@@ -113,5 +115,109 @@ export function ImageField({ label, name, defaultValue, hint }: { label: string;
         </div>
       </div>
     </div>
+  );
+}
+
+type ListItemField = { key: string; label: string; type: "text" | "textarea" | "icon" };
+
+/**
+ * Editable list of items (e.g. "How we work" steps). Inputs are named `${name}.${index}.${field}`
+ * plus `${name}.count`, which the savePageContent action reads back in order.
+ * With `fixedLabels` the number of items is fixed (no add/remove), e.g. menu links to set pages.
+ */
+export function ListField({
+  name,
+  label,
+  fields,
+  initial,
+  max = 20,
+  fixedLabels,
+  icons,
+}: {
+  name: string;
+  label: string;
+  fields: ListItemField[];
+  initial: Record<string, string>[];
+  max?: number;
+  fixedLabels?: string[];
+  icons: string[];
+}) {
+  const nextId = useRef(initial.length);
+  const [rows, setRows] = useState(() => initial.map((values, id) => ({ id, values })));
+  const fixed = Boolean(fixedLabels);
+
+  const move = (i: number, by: number) =>
+    setRows((r) => {
+      const j = i + by;
+      if (j < 0 || j >= r.length) return r;
+      const copy = [...r];
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+      return copy;
+    });
+  const remove = (i: number) => setRows((r) => r.filter((_, k) => k !== i));
+  const add = () =>
+    setRows((r) => [...r, { id: nextId.current++, values: Object.fromEntries(fields.map((f) => [f.key, f.type === "icon" ? "scale" : ""])) }]);
+
+  const btn = "rounded border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-40";
+
+  return (
+    <fieldset>
+      <legend className="mb-2 text-sm font-medium text-slate-700">{label}</legend>
+      <input type="hidden" name={`${name}.count`} value={rows.length} />
+      <div className="space-y-3">
+        {rows.map((row, i) => (
+          <div key={row.id} className="rounded-md border border-slate-200 bg-slate-50/70 p-4">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <span className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
+                {fixedLabels?.[i] ?? `Item ${i + 1}`}
+              </span>
+              {!fixed && (
+                <span className="flex gap-1.5">
+                  <button type="button" className={btn} onClick={() => move(i, -1)} disabled={i === 0} aria-label="Move up">
+                    ↑
+                  </button>
+                  <button type="button" className={btn} onClick={() => move(i, 1)} disabled={i === rows.length - 1} aria-label="Move down">
+                    ↓
+                  </button>
+                  <button type="button" className={`${btn} text-red-600`} onClick={() => remove(i)}>
+                    Remove
+                  </button>
+                </span>
+              )}
+            </div>
+            <div className="grid gap-3 md:grid-cols-[repeat(auto-fit,minmax(12rem,1fr))]">
+              {fields.map((f) => {
+                const fieldName = `${name}.${i}.${f.key}`;
+                const value = row.values[f.key] ?? "";
+                return (
+                  <label key={f.key} className={`block ${f.type === "textarea" ? "md:col-span-full" : ""}`}>
+                    <span className="mb-1 block text-xs font-medium text-slate-600">{f.label}</span>
+                    {f.type === "icon" ? (
+                      <select name={fieldName} defaultValue={value || "scale"} className={inputCls}>
+                        {icons.map((k) => (
+                          <option key={k} value={k}>
+                            {k}
+                          </option>
+                        ))}
+                      </select>
+                    ) : f.type === "textarea" ? (
+                      <textarea name={fieldName} defaultValue={value} rows={2} className={inputCls} />
+                    ) : (
+                      <input name={fieldName} defaultValue={value} className={inputCls} />
+                    )}
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+        {rows.length === 0 && <p className="text-sm text-slate-500">No items — this part is hidden on the website.</p>}
+      </div>
+      {!fixed && rows.length < max && (
+        <button type="button" onClick={add} className="mt-3 rounded-md border border-dashed border-slate-400 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-white">
+          + Add item
+        </button>
+      )}
+    </fieldset>
   );
 }

@@ -3,6 +3,7 @@
 // and the build never needs a database connection.
 import { cache } from "react";
 import { connection } from "next/server";
+import { mergeContent } from "./content";
 import { db } from "./db";
 
 export const getSettings = cache(async () => {
@@ -11,6 +12,19 @@ export const getSettings = cache(async () => {
 });
 
 export type Settings = Awaited<ReturnType<typeof getSettings>>;
+
+/** All editable page text (Admin → Pages & sections), merged over the built-in defaults. */
+export const getContent = cache(async () => {
+  await connection();
+  const rows = await db.pageContent.findMany();
+  const saved: Record<string, unknown> = {};
+  for (const r of rows) {
+    try {
+      saved[r.key] = JSON.parse(r.data);
+    } catch {}
+  }
+  return mergeContent(saved);
+});
 
 export const getPracticeAreas = cache(async () => {
   await connection();

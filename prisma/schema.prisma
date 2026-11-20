@@ -165,3 +165,11 @@ model AdminUser {
   passwordHash String
   createdAt    DateTime @default(now())
 }
+
+/// Editable page text and sections (Admin → Pages & sections). One row per section;
+/// `data` is a JSON object that overrides the built-in defaults in src/lib/content.ts.
+model PageContent {
+  key       String   @id
+  data      String
+  updatedAt DateTime @default(now()) @updatedAt
+}

@@ -5,7 +5,7 @@ import { ArrowRightIcon } from "@/components/icons";
 import { PostCard } from "@/components/site/Cards";
 import { JsonLd } from "@/components/site/JsonLd";
 import { CtaBand, Ornament, SectionHeading } from "@/components/site/Sections";
-import { getPost, getPosts, getSettings } from "@/lib/data";
+import { getContent, getPost, getPosts, getSettings } from "@/lib/data";
 import { breadcrumbSchema, pageMetadata } from "@/lib/seo";
 import { absoluteUrl, formatDate, plainText, readingMinutes, renderMarkdown, siteUrl } from "@/lib/utils";
 
@@ -28,8 +28,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PostPage({ params }: Props) {
   const { slug } = await params;
-  const [settings, post, recent] = await Promise.all([getSettings(), getPost(slug), getPosts(4)]);
+  const [settings, content, post, recent] = await Promise.all([getSettings(), getContent(), getPost(slug), getPosts(4)]);
   if (!post) notFound();
+  const t = content["blog.post"];
 
   const path = `/blog/${post.slug}`;
   const author = post.author || settings.firmName;
@@ -113,12 +114,10 @@ export default async function PostPage({ params }: Props) {
           <div className="content text-[1.1rem]" dangerouslySetInnerHTML={{ __html: renderMarkdown(post.body) }} />
 
           <aside className="hero-pattern mt-16 overflow-hidden rounded-xl p-8 text-white md:p-10">
-            <p className="font-serif text-[1.75rem] leading-tight font-semibold">Need advice on your specific situation?</p>
-            <p className="mt-3 text-white/70">
-              This article is general information, not legal advice. Contact us to discuss your circumstances.
-            </p>
+            {t.adviceTitle && <p className="font-serif text-[1.75rem] leading-tight font-semibold">{t.adviceTitle}</p>}
+            {t.adviceText && <p className="mt-3 text-white/70">{t.adviceText}</p>}
             <Link href="/contact" className="btn-gold mt-7">
-              Book a Consultation <ArrowRightIcon width={16} height={16} />
+              {t.adviceButton} <ArrowRightIcon width={16} height={16} />
             </Link>
           </aside>
         </div>
@@ -127,7 +126,7 @@ export default async function PostPage({ params }: Props) {
       {more.length > 0 && (
         <section className="section paper border-t border-cream-200">
           <div className="container-x">
-            <SectionHeading eyebrow="Keep Reading" title="More *insights*" />
+            <SectionHeading eyebrow={t.moreEyebrow} title={t.moreTitle} />
             <div className="mt-14 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {more.map((p) => (
                 <PostCard key={p.id} post={p} />
@@ -136,7 +135,7 @@ export default async function PostPage({ params }: Props) {
           </div>
         </section>
       )}
-      <CtaBand settings={settings} />
+      <CtaBand settings={settings} content={content} />
     </>
   );
 }

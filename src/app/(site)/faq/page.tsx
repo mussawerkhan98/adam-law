@@ -2,21 +2,25 @@ import type { Metadata } from "next";
 import { FaqList } from "@/components/site/Cards";
 import { JsonLd } from "@/components/site/JsonLd";
 import { CtaBand, PageHero } from "@/components/site/Sections";
-import { getFaqs, getSettings } from "@/lib/data";
+import { getContent, getFaqs, getSettings } from "@/lib/data";
 import { breadcrumbSchema, faqSchema, pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSettings();
+  const [settings, content] = await Promise.all([getSettings(), getContent()]);
+  const page = content["faq.page"];
   return pageMetadata({
     settings,
-    title: "Frequently Asked Questions",
-    description: `Answers to common questions about working with ${settings.firmName}: consultations, fees, documents and timelines.`,
+    title: page.metaTitle,
+    description:
+      page.metaDescription ||
+      `Answers to common questions about working with ${settings.firmName}: consultations, fees, documents and timelines.`,
     path: "/faq",
   });
 }
 
 export default async function FaqPage() {
-  const [settings, faqs] = await Promise.all([getSettings(), getFaqs()]);
+  const [settings, content, faqs] = await Promise.all([getSettings(), getContent(), getFaqs()]);
+  const page = content["faq.page"];
   return (
     <>
       <JsonLd
@@ -29,9 +33,9 @@ export default async function FaqPage() {
         ]}
       />
       <PageHero
-        eyebrow="FAQ"
-        title="Frequently asked questions"
-        intro="If your question is not answered here, contact us and we will be glad to help."
+        eyebrow={page.eyebrow}
+        title={page.title}
+        intro={page.intro}
         crumbs={[
           { name: "Home", href: "/" },
           { name: "FAQ", href: "/faq" },
@@ -39,10 +43,10 @@ export default async function FaqPage() {
       />
       <section className="section paper">
         <div className="container-x max-w-4xl">
-          {faqs.length ? <FaqList faqs={faqs} /> : <p className="text-muted">Questions will be added soon.</p>}
+          {faqs.length ? <FaqList faqs={faqs} /> : <p className="text-muted">{page.emptyText}</p>}
         </div>
       </section>
-      <CtaBand settings={settings} />
+      <CtaBand settings={settings} content={content} />
     </>
   );
 }

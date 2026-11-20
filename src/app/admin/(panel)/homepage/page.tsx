@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ImageField, SubmitButton } from "@/components/admin/client";
 import { Card, Field, Flash, PageHeader, TextArea } from "@/components/admin/ui";
 import { db } from "@/lib/db";
@@ -14,6 +15,14 @@ export default async function HomepageEditor({ searchParams }: { searchParams: P
   return (
     <>
       <PageHeader title="Home & About page" description="The main banner, statistics, about section and call-to-action." />
+      <p className="mb-6 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        All other text on the website — section headings, “Why choose us” boxes, “How we work” steps, buttons, menus, footer and
+        every other page — is under{" "}
+        <Link href="/admin/pages/home" className="font-semibold underline underline-offset-2">
+          Pages &amp; sections
+        </Link>
+        .
+      </p>
       <Flash saved={saved} error={error} />
       <form action={saveSettings} className="space-y-6">
         <input type="hidden" name="returnTo" value="/admin/homepage" />

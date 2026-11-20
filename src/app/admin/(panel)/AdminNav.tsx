@@ -15,6 +15,7 @@ const GROUPS = [
     label: "Website content",
     items: [
       { href: "/admin/homepage", label: "Home & About page" },
+      { href: "/admin/pages", label: "Pages & sections" },
       { href: "/admin/practice-areas", label: "Practice areas" },
       { href: "/admin/team", label: "Team" },
       { href: "/admin/posts", label: "Blog / Insights" },

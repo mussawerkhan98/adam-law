@@ -3,7 +3,9 @@
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { PRACTICE_ICON_KEYS } from "@/components/icons";
 import { SESSION_COOKIE } from "@/lib/auth";
+import { PAGES } from "@/lib/content";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/session";
 import { slugify } from "@/lib/utils";
@@ -110,6 +112,51 @@ export async function saveSettings(f: FormData) {
   if (data.firmName === "") data.firmName = "Adam Law Chamber";
   await db.siteSettings.upsert({ where: { id: 1 }, update: data, create: { id: 1, ...data } });
   back(returnTo, { saved: "1" });
+}
+
+/* ---------- page text & sections ---------- */
+export async function savePageContent(f: FormData) {
+  await requireAdmin();
+  const page = PAGES.find((p) => p.id === str(f, "page"));
+  if (!page) redirect("/admin/pages");
+  for (const section of page.sections) {
+    const data: Record<string, unknown> = {};
+    for (const field of section.fields) {
+      const name = `${section.key}.${field.key}`;
+      if (field.type === "toggle") {
+        data[field.key] = f.get(name) === "on";
+      } else if (field.type === "list") {
+        const limit = field.fixedLabels?.length ?? field.max ?? 20;
+        const count = Math.min(Math.max(0, int(f, `${name}.count`)), limit);
+        const items: Record<string, string>[] = [];
+        for (let i = 0; i < count; i++) {
+          const item: Record<string, string> = {};
+          for (const sub of field.item ?? []) {
+            const v = str(f, `${name}.${i}.${sub.key}`);
+            item[sub.key] = sub.type === "icon" ? (PRACTICE_ICON_KEYS.includes(v) ? v : "scale") : v.slice(0, 600);
+          }
+          // Drop rows left completely empty (icons alone don't count); fixed lists keep every row.
+          const hasText = (field.item ?? []).some((sub) => sub.type !== "icon" && item[sub.key]);
+          if (hasText || field.fixedLabels) items.push(item);
+        }
+        data[field.key] = items;
+      } else {
+        data[field.key] = str(f, name).slice(0, field.type === "textarea" ? 2000 : 300);
+      }
+    }
+    const json = JSON.stringify(data);
+    await db.pageContent.upsert({ where: { key: section.key }, update: { data: json }, create: { key: section.key, data: json } });
+  }
+  back(`/admin/pages/${page.id}`, { saved: "1" });
+}
+
+export async function resetPageSection(f: FormData) {
+  await requireAdmin();
+  const page = PAGES.find((p) => p.id === str(f, "page"));
+  const section = page?.sections.find((s) => s.key === str(f, "section"));
+  if (!page || !section) redirect("/admin/pages");
+  await db.pageContent.deleteMany({ where: { key: section.key } });
+  back(`/admin/pages/${page.id}`, { saved: "1" });
 }
 
 /* ---------- practice areas ---------- */

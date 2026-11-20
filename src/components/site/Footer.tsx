@@ -12,6 +12,7 @@ import {
   XIcon,
   YouTubeIcon,
 } from "@/components/icons";
+import type { Content } from "@/lib/content";
 import type { Settings } from "@/lib/data";
 import { telHref, whatsappHref } from "@/lib/utils";
 
@@ -26,7 +27,19 @@ function FooterHeading({ children }: { children: React.ReactNode }) {
 
 const linkCls = "group inline-flex items-center gap-2 transition hover:text-gold-300";
 
-export function Footer({ settings, areas }: { settings: Settings; areas: { title: string; slug: string }[] }) {
+const QUICK_LINKS = ["/about", "/team", "/blog", "/faq", "/contact"];
+
+export function Footer({
+  settings,
+  areas,
+  content,
+}: {
+  settings: Settings;
+  areas: { title: string; slug: string }[];
+  content: Content;
+}) {
+  const t = content["footer.main"];
+  const whatsappLabel = content["shared.cta"].whatsappLabel;
   const socials = [
     { href: settings.facebook, label: "Facebook", Icon: FacebookIcon },
     { href: settings.instagram, label: "Instagram", Icon: InstagramIcon },
@@ -68,7 +81,7 @@ export function Footer({ settings, areas }: { settings: Settings; areas: { title
         </div>
 
         <div>
-          <FooterHeading>Practice Areas</FooterHeading>
+          {t.practiceHeading && <FooterHeading>{t.practiceHeading}</FooterHeading>}
           <ul className="space-y-3">
             {areas.slice(0, 6).map((a) => (
               <li key={a.slug}>
@@ -82,15 +95,9 @@ export function Footer({ settings, areas }: { settings: Settings; areas: { title
         </div>
 
         <div>
-          <FooterHeading>Quick Links</FooterHeading>
+          {t.linksHeading && <FooterHeading>{t.linksHeading}</FooterHeading>}
           <ul className="space-y-3">
-            {[
-              ["/about", "About Us"],
-              ["/team", "Our Team"],
-              ["/blog", "Legal Insights"],
-              ["/faq", "FAQ"],
-              ["/contact", "Contact"],
-            ].map(([href, label]) => (
+            {QUICK_LINKS.map((href, i) => ({ href, label: t.links[i]?.label })).filter((l) => l.label).map(({ href, label }) => (
               <li key={href}>
                 <Link href={href} className={linkCls}>
                   <span aria-hidden className="h-1 w-1 rotate-45 bg-gold-500/70 transition group-hover:bg-gold-300" />
@@ -102,7 +109,7 @@ export function Footer({ settings, areas }: { settings: Settings; areas: { title
         </div>
 
         <div>
-          <FooterHeading>Get in Touch</FooterHeading>
+          {t.contactHeading && <FooterHeading>{t.contactHeading}</FooterHeading>}
           {hasContact && (
             <ul className="space-y-4">
               {fullAddress && (
@@ -123,7 +130,7 @@ export function Footer({ settings, areas }: { settings: Settings; areas: { title
                 <li className="flex gap-3">
                   <WhatsAppIcon width={18} height={18} className="mt-0.5 shrink-0 text-gold-400" />
                   <a href={whatsappHref(settings.whatsapp)} target="_blank" rel="noopener noreferrer" className="transition hover:text-gold-300">
-                    WhatsApp us
+                    {whatsappLabel}
                   </a>
                 </li>
               )}
@@ -144,10 +151,10 @@ export function Footer({ settings, areas }: { settings: Settings; areas: { title
             </ul>
           )}
           <div className={`rounded-xl border border-gold-500/25 bg-white/[0.03] p-5 ${hasContact ? "mt-7" : ""}`}>
-            <p className="font-serif text-xl font-semibold text-white">Free first consultation</p>
-            <p className="mt-1 text-sm">Confidential advice on your next steps.</p>
+            {t.consultTitle && <p className="font-serif text-xl font-semibold text-white">{t.consultTitle}</p>}
+            {t.consultText && <p className="mt-1 text-sm">{t.consultText}</p>}
             <Link href="/contact" className="mt-4 inline-flex items-center gap-2 text-[0.78rem] font-semibold tracking-[0.12em] text-gold-300 uppercase transition hover:text-gold-200">
-              Book now <ArrowRightIcon width={14} height={14} />
+              {t.consultLink} <ArrowRightIcon width={14} height={14} />
             </Link>
           </div>
         </div>
@@ -156,9 +163,9 @@ export function Footer({ settings, areas }: { settings: Settings; areas: { title
       <div className="gold-hairline opacity-40" />
       <div className="container-x relative flex flex-col gap-3 py-7 text-xs text-white/45 md:flex-row md:items-center md:justify-between">
         <p>
-          © {new Date().getFullYear()} {settings.firmName}. All rights reserved.
+          © {new Date().getFullYear()} {settings.firmName}. {t.copyright}
         </p>
-        <p className="max-w-xl md:text-right">The information on this website is for general guidance only and is not legal advice.</p>
+        {t.disclaimer && <p className="max-w-xl md:text-right">{t.disclaimer}</p>}
       </div>
     </footer>
   );
