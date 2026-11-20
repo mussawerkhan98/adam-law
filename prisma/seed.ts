@@ -6,9 +6,9 @@
  *   npm run db:seed
  */
 import bcrypt from "bcryptjs";
-import { PrismaClient } from "@prisma/client";
+import { createPrismaClient } from "../src/lib/prisma-client";
 
-const db = new PrismaClient();
+const db = createPrismaClient();
 
 const practiceAreas = [
   {
@@ -233,10 +233,11 @@ async function main() {
   const email = (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
   const password = process.env.ADMIN_PASSWORD || "";
   if (!email || password.length < 10) {
-    throw new Error("Set ADMIN_EMAIL and ADMIN_PASSWORD (min 10 chars) in .env before seeding.");
-  }
-  const existing = await db.adminUser.findUnique({ where: { email } });
-  if (existing) {
+    if ((await db.adminUser.count()) === 0) {
+      throw new Error("Set ADMIN_EMAIL and ADMIN_PASSWORD (min 10 chars) to create the first admin account.");
+    }
+    console.log("ADMIN_EMAIL / ADMIN_PASSWORD not set — keeping the existing admin account(s).");
+  } else if (await db.adminUser.findUnique({ where: { email } })) {
     console.log(`Admin ${email} already exists — password left unchanged.`);
   } else {
     await db.adminUser.create({ data: { email, name: "Administrator", passwordHash: await bcrypt.hash(password, 12) } });

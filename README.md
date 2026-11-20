@@ -6,18 +6,18 @@ Public website for Adam Law Chamber with a built-in admin panel for managing all
 - **Admin panel** (`/admin`): edit practice areas, team, testimonials, FAQs, blog posts, home page content, firm details, SEO settings, and read enquiries from the contact form
 - **SEO:** per-page titles/descriptions, canonical URLs, `sitemap.xml`, `robots.txt`, social-share image, and schema.org structured data (LegalService, FAQ, breadcrumbs)
 
-**Stack:** Next.js 15 (App Router) · React 19 · Tailwind CSS 4 · Prisma 6 · MySQL 8 / MariaDB 10.6+
+**Stack:** Next.js 15 (App Router) · React 19 · Tailwind CSS 4 · Prisma 6 · Turso (libSQL / SQLite)
 
 ---
 
 ## 1. Run it locally
 
-Requirements: **Node.js 20+** and a **MySQL or MariaDB** database.
+Requirements: **Node.js 20.12+**. No database server is needed locally — the site uses a file, `prisma/dev.db`, created on first setup.
 
 ```bash
 npm install
 cp .env.example .env        # then fill in the values (see below)
-npm run setup               # creates the tables and the starter content + first admin account
+npm run setup               # creates prisma/dev.db with the tables, starter content and first admin account
 npm run dev                 # http://localhost:3000
 ```
 
@@ -27,10 +27,10 @@ Admin panel: <http://localhost:3000/admin> — sign in with `ADMIN_EMAIL` / `ADM
 
 | Variable | What it is |
 | --- | --- |
-| `DATABASE_URL` | MySQL connection string, e.g. `mysql://user:password@host:3306/database` |
+| `TURSO_DATABASE_URL` / `TURSO_AUTH_TOKEN` | The Turso database (`libsql://…`) and its token. Leave empty locally to use `prisma/dev.db` |
 | `AUTH_SECRET` | Long random string that signs admin sessions. Generate one with `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"` |
 | `SITE_URL` | Public address of the site, no trailing slash, e.g. `https://www.adamlawchamber.com`. Used for canonical links, the sitemap and social previews |
-| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | The first admin account. Only read by `npm run setup` / `npm run db:seed` |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | The first admin account, created when the database is new. Not used after that |
 
 `.env` holds passwords and must never be committed (it is already in `.gitignore`).
 
@@ -39,10 +39,9 @@ Admin panel: <http://localhost:3000/admin> — sign in with `ADMIN_EMAIL` / `ADM
 | Command | Does |
 | --- | --- |
 | `npm run dev` | Development server with hot reload |
-| `npm run build` | Production build (also generates the Prisma client) |
+| `npm run build` | Production build. Also brings the database up to date (`db:setup`) |
 | `npm start` | Runs the production build |
-| `npm run setup` | First-time setup: `db:push` + `db:seed` |
-| `npm run db:push` | Creates/updates database tables to match `prisma/schema.prisma` |
+| `npm run setup` / `npm run db:setup` | Creates missing tables and new columns from `prisma/schema.prisma`; on a new database, also adds starter content and the admin account. Never deletes data |
 | `npm run db:seed` | Adds starter content and the admin account. Safe to re-run — it only fills in what is missing |
 | `npm run lint` | ESLint |
 
@@ -50,27 +49,15 @@ Admin panel: <http://localhost:3000/admin> — sign in with `ADMIN_EMAIL` / `ADM
 
 ---
 
-## 2. Deploy
+## 2. Deploy (Vercel + Turso)
 
-The site is a standard Node.js app, so it runs on any host that supports Node.js 20+ and gives you a MySQL database — e.g. a Hostinger plan with Node.js support or a VPS, or Vercel plus a hosted MySQL.
+1. **Create a Turso database** at [turso.tech](https://turso.tech) — pick the location closest to Vercel's server region (default: AWS US East, Virginia).
+2. **Connect it to Vercel:** Vercel project → **Storage** → connect the Turso database (this adds `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN`). Or add those two variables by hand from the Turso dashboard (database → *Connect*: URL + a new token).
+3. **Add the other variables** in Vercel → Settings → Environment Variables: `AUTH_SECRET` (new random string), `SITE_URL` (the live address), `ADMIN_EMAIL` and `ADMIN_PASSWORD` (first admin login), and optionally the `SMTP_*` email settings. Remove any old `DATABASE_URL` that starts with `mysql://`.
+4. **Deploy** (push to GitHub, or Redeploy in Vercel — variable changes only apply to a new deployment). The build creates the tables and, on a new database, the starter content and admin account. If no Turso database is connected, the build stops with a message saying so.
+5. **After going live:** sign in at `/admin`, change the admin password under **Account**, fill in firm details under **Settings** (phone, WhatsApp, address, map, social links, SEO), and submit `https://<your-domain>/sitemap.xml` in Google Search Console.
 
-1. **Create a MySQL database** on the host and note its host, name, user and password.
-2. **Get the code onto the server** — connect this GitHub repository, or upload the files (without `node_modules`, `.next` and `.env`).
-3. **Set the environment variables** from the table above in the host's control panel. Use the live domain for `SITE_URL` and a new random `AUTH_SECRET` (don't reuse the local one).
-4. **Build and start:**
-   ```bash
-   npm install
-   npm run build
-   npm start          # listens on $PORT, default 3000
-   ```
-5. **First deploy only — create tables and the admin account.** `npm run setup` reads a `.env` file, so either create a `.env` on the server with the values above, or run the steps directly with the variables already set:
-   ```bash
-   npx prisma db push
-   npx tsx prisma/seed.ts
-   ```
-6. **After going live:** sign in at `/admin`, change the admin password under **Account**, fill in firm details under **Settings** (phone, WhatsApp, address, map, social links, SEO), and submit `https://<your-domain>/sitemap.xml` in Google Search Console.
-
-When `prisma/schema.prisma` changes in a later update, run `npx prisma db push` once on the server after deploying.
+Schema changes that add tables or fields are applied automatically on the next deploy. Renaming or removing a field needs a manual migration.
 
 ---
 

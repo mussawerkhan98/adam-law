@@ -1,13 +1,14 @@
 // Adam Law Chamber — website + admin panel data model.
-// Works with MySQL 8 / MariaDB 10.6+ (Hostinger, PlanetScale-compatible hosts, local MariaDB).
+// SQLite / Turso (libSQL). Local dev uses prisma/dev.db; production uses Turso via TURSO_DATABASE_URL.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  // Only used by Prisma CLI for the local file; the app connects through src/lib/prisma-client.ts.
+  url      = "file:./dev.db"
 }
 
 /// Single row (id = 1) holding firm details, home page content and default SEO.
@@ -27,7 +28,7 @@ model SiteSettings {
   postalCode  String  @default("")
   country     String  @default("")
   officeHours String  @default("")
-  mapEmbedUrl String? @db.Text
+  mapEmbedUrl String?
   facebook    String  @default("")
   instagram   String  @default("")
   linkedin    String  @default("")
@@ -37,10 +38,10 @@ model SiteSettings {
   // Home page
   heroEyebrow   String  @default("")
   heroTitle     String  @default("")
-  heroSubtitle  String? @db.Text
+  heroSubtitle  String?
   heroImageUrl  String  @default("")
   aboutTitle    String  @default("")
-  aboutBody     String? @db.Text
+  aboutBody     String?
   aboutImageUrl String  @default("")
   stat1Value    String  @default("")
   stat1Label    String  @default("")
@@ -51,13 +52,13 @@ model SiteSettings {
   stat4Value    String  @default("")
   stat4Label    String  @default("")
   ctaTitle      String  @default("")
-  ctaText       String? @db.Text
-  footerText    String? @db.Text
+  ctaText       String?
+  footerText    String?
 
   // Default SEO
   seoTitle           String  @default("")
-  seoDescription     String? @db.Text
-  seoKeywords        String? @db.Text
+  seoDescription     String?
+  seoKeywords        String?
   ogImageUrl         String  @default("")
   googleVerification String  @default("")
 
@@ -69,13 +70,13 @@ model PracticeArea {
   title          String
   slug           String   @unique
   icon           String   @default("scale")
-  summary        String   @db.Text
-  body           String?  @db.Text
+  summary        String
+  body           String?
   imageUrl       String   @default("")
   sortOrder      Int      @default(0)
   published      Boolean  @default(true)
   seoTitle       String   @default("")
-  seoDescription String?  @db.Text
+  seoDescription String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
@@ -84,7 +85,7 @@ model TeamMember {
   id        Int      @id @default(autoincrement())
   name      String
   role      String   @default("")
-  bio       String?  @db.Text
+  bio       String?
   photoUrl  String   @default("")
   email     String   @default("")
   phone     String   @default("")
@@ -98,7 +99,7 @@ model Testimonial {
   id        Int      @id @default(autoincrement())
   name      String
   role      String   @default("")
-  quote     String   @db.Text
+  quote     String
   rating    Int      @default(5)
   sortOrder Int      @default(0)
   published Boolean  @default(true)
@@ -108,8 +109,8 @@ model Testimonial {
 
 model Faq {
   id        Int      @id @default(autoincrement())
-  question  String   @db.Text
-  answer    String   @db.Text
+  question  String
+  answer    String
   sortOrder Int      @default(0)
   published Boolean  @default(true)
   createdAt DateTime @default(now())
@@ -120,14 +121,14 @@ model Post {
   id             Int       @id @default(autoincrement())
   title          String
   slug           String    @unique
-  excerpt        String?   @db.Text
-  body           String?   @db.Text
+  excerpt        String?
+  body           String?
   coverUrl       String    @default("")
   author         String    @default("")
   published      Boolean   @default(false)
   publishedAt    DateTime?
   seoTitle       String    @default("")
-  seoDescription String?   @db.Text
+  seoDescription String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
@@ -140,7 +141,7 @@ model Message {
   email        String
   phone        String   @default("")
   practiceArea String   @default("")
-  message      String   @db.Text
+  message      String
   read         Boolean  @default(false)
   createdAt    DateTime @default(now())
 
@@ -153,7 +154,7 @@ model Media {
   filename  String
   mimeType  String
   size      Int
-  data      Bytes    @db.LongBlob
+  data      Bytes
   createdAt DateTime @default(now())
 }
 
