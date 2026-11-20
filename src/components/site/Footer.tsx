@@ -162,9 +162,22 @@ export function Footer({
 
       <div className="gold-hairline opacity-40" />
       <div className="container-x relative flex flex-col gap-3 py-7 text-xs text-white/45 md:flex-row md:items-center md:justify-between">
-        <p>
-          © {new Date().getFullYear()} {settings.firmName}. {t.copyright}
-        </p>
+        <div className="space-y-1.5">
+          <p>
+            © {new Date().getFullYear()} {settings.firmName}. {t.copyright}
+          </p>
+          <p>
+            Powered by{" "}
+            <a
+              href="https://www.byteflow.ae/"
+              target="_blank"
+              rel="noopener"
+              className="font-semibold tracking-[0.12em] text-gold-300 transition hover:text-gold-200"
+            >
+              BYTEFLOW
+            </a>
+          </p>
+        </div>
         {t.disclaimer && <p className="max-w-xl md:text-right">{t.disclaimer}</p>}
       </div>
     </footer>
